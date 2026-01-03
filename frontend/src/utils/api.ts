@@ -193,7 +193,7 @@ export const apiEndpoints = {
 };
 
 // Log da URL da API em desenvolvimento (para debug)
-if (import.meta.env.DEV) {
+if (import.meta.env?.DEV) {
   console.log('🔗 API URL:', API_BASE_URL);
 }
 
