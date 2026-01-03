@@ -15,9 +15,42 @@ const PORT = process.env.PORT || 3000;
 // ============================================================================
 
 app.use(helmet());
+
+// CORS Configuration - Aceita Vercel e outros domínios
+const allowedOrigins = [
+  'http://localhost:5173', // Frontend local
+  'http://localhost:3000', // Backend local (para testes)
+  ...(process.env.CORS_ORIGIN?.split(',') || []),
+  // Aceita qualquer domínio do Vercel (*.vercel.app)
+  /^https:\/\/.*\.vercel\.app$/,
+  // Aceita domínio customizado do Vercel (se configurado)
+  process.env.VERCEL_URL && `https://${process.env.VERCEL_URL}`,
+  process.env.FRONTEND_URL,
+].filter(Boolean);
+
 app.use(cors({
-  origin: process.env.CORS_ORIGIN?.split(',') || '*',
+  origin: (origin, callback) => {
+    // Permite requisições sem origin (mobile apps, Postman, etc)
+    if (!origin) return callback(null, true);
+    
+    // Verifica se o origin está na lista de permitidos
+    const isAllowed = allowedOrigins.some(allowed => {
+      if (allowed instanceof RegExp) {
+        return allowed.test(origin);
+      }
+      return allowed === origin;
+    });
+    
+    if (isAllowed) {
+      callback(null, true);
+    } else {
+      console.warn(`CORS blocked origin: ${origin}`);
+      callback(null, true); // Permite por padrão (ajuste se quiser mais restritivo)
+    }
+  },
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

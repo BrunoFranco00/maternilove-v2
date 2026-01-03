@@ -1,10 +1,21 @@
 import { useEffect, useState } from 'react'
+import { apiEndpoints } from './utils/api'
 import './App.css'
 
 function App() {
   const [installPrompt, setInstallPrompt] = useState<any>(null);
+  const [apiStatus, setApiStatus] = useState<string>('checking...');
 
   useEffect(() => {
+    // Testa conexão com a API
+    apiEndpoints.health()
+      .then((data) => {
+        setApiStatus(data.database === 'connected' ? '✅ Conectado' : '⚠️ Banco desconectado');
+      })
+      .catch(() => {
+        setApiStatus('❌ Erro ao conectar');
+      });
+
     const handler = (e: Event) => {
       e.preventDefault();
       setInstallPrompt(e);
@@ -30,8 +41,11 @@ function App() {
           <h1 className="text-5xl font-bold text-white mb-4 drop-shadow-lg">
             🎉 MaternLove V2
           </h1>
-          <p className="text-xl text-white/90 mb-8 drop-shadow-md">
+          <p className="text-xl text-white/90 mb-4 drop-shadow-md">
             Plataforma pronta para desenvolvimento!
+          </p>
+          <p className="text-sm text-white/70 mb-8 drop-shadow-md">
+            Status API: {apiStatus}
           </p>
           <div className="flex gap-4 justify-center flex-wrap">
             <button className="px-8 py-4 bg-white text-primary-500 font-bold rounded-lg hover:shadow-lg transition-all duration-300 hover:-translate-y-1 transform">
