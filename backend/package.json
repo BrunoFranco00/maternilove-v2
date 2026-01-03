@@ -1,7 +1,7 @@
 {
   "name": "maternilove-backend",
   "version": "1.0.0",
-  "description": "MaternLove Backend - API REST",
+  "description": "Materni Love Backend - API REST",
   "main": "dist/server.js",
   "type": "module",
   "scripts": {

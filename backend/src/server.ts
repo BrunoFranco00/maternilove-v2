@@ -81,7 +81,7 @@ app.get('/health', async (req: Request, res: Response) => {
 // API Root
 app.get('/api', (req: Request, res: Response) => {
   res.json({ 
-    message: 'MaternLove API v1',
+    message: 'Materni Love API v1',
     version: '1.0.0',
     endpoints: {
       health: '/health',
@@ -159,7 +159,7 @@ process.on('SIGTERM', async () => {
 
 app.listen(PORT, () => {
   console.log('');
-  console.log('🚀 MaternLove Backend Server');
+  console.log('🚀 Materni Love Backend Server');
   console.log(`📍 Server running on: http://localhost:${PORT}`);
   console.log('✨ Ready to receive requests!');
   console.log('');

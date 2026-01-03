@@ -39,7 +39,7 @@ function App() {
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center animate-fade-in-up">
           <h1 className="text-5xl font-bold text-white mb-4 drop-shadow-lg">
-            🎉 MaternLove V2
+            🎉 Materni Love
           </h1>
           <p className="text-xl text-white/90 mb-4 drop-shadow-md">
             Plataforma pronta para desenvolvimento!

@@ -9,8 +9,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
       manifest: {
-        name: 'MaternLove - Maternidade com Apoio',
-        short_name: 'MaternLove',
+        name: 'Materni Love - Maternidade com Apoio',
+        short_name: 'Materni Love',
         description: 'Plataforma para mulheres grávidas e mães com filhos até 5 anos',
         theme_color: '#D946A6',
         background_color: '#FFFFFF',
