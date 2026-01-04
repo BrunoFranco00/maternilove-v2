@@ -46,6 +46,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       };
     }>('/api/auth/login', { email, password });
     
+    if (!response.success) {
+      throw new Error('Erro ao fazer login');
+    }
+    
     const { user, tokens } = response.data;
     
     localStorage.setItem('accessToken', tokens.accessToken);
@@ -64,6 +68,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         };
       };
     }>('/api/auth/register', { name, email, password });
+    
+    if (!response.success) {
+      throw new Error('Erro ao criar conta');
+    }
     
     const { user, tokens } = response.data;
     

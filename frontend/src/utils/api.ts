@@ -37,8 +37,14 @@ class ApiClient {
         localStorage.removeItem('refreshToken');
         window.location.href = '/login';
       }
-      const error = await response.json().catch(() => ({ message: response.statusText }));
-      throw new Error(error.message || `API Error: ${response.status}`);
+      const errorData = await response.json().catch(() => ({ error: { message: response.statusText } }));
+      
+      // Extrair mensagem de erro do formato { success: false, error: { message: "..." } }
+      const errorMessage = errorData.error?.message || errorData.message || `API Error: ${response.status}`;
+      const error = new Error(errorMessage);
+      (error as any).status = response.status;
+      (error as any).data = errorData;
+      throw error;
     }
 
     return response.json();

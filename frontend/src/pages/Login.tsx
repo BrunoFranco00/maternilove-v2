@@ -1,22 +1,31 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import { useAuth } from '../contexts/AuthContext'
+import { toast } from 'react-toastify'
 
 export default function Login() {
   const navigate = useNavigate()
+  const { login } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
+    setError('')
     
-    // TODO: Implementar autenticação
-    // Por enquanto, apenas redireciona
-    setTimeout(() => {
-      setLoading(false)
+    try {
+      await login(email, password)
+      toast.success('Login realizado com sucesso!')
       navigate('/dashboard')
-    }, 1000)
+    } catch (err: any) {
+      setError(err.message || 'Erro ao fazer login. Verifique suas credenciais.')
+      toast.error(err.message || 'Erro ao fazer login')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -34,6 +43,12 @@ export default function Login() {
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
+            {error && (
+              <div className="bg-red-500/20 border border-red-500/50 text-red-100 px-4 py-3 rounded-lg text-sm">
+                {error}
+              </div>
+            )}
+            
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-white/90 mb-2">
                 E-mail
@@ -44,7 +59,8 @@ export default function Login() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent backdrop-blur-sm"
+                disabled={loading}
+                className="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent backdrop-blur-sm disabled:opacity-50"
                 placeholder="seu@email.com"
               />
             </div>
@@ -59,7 +75,8 @@ export default function Login() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent backdrop-blur-sm"
+                disabled={loading}
+                className="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent backdrop-blur-sm disabled:opacity-50"
                 placeholder="••••••••"
               />
             </div>

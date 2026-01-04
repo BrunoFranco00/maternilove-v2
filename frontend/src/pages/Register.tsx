@@ -1,8 +1,11 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import { useAuth } from '../contexts/AuthContext'
+import { toast } from 'react-toastify'
 
 export default function Register() {
   const navigate = useNavigate()
+  const { register } = useAuth()
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -10,6 +13,7 @@ export default function Register() {
     confirmPassword: ''
   })
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -20,20 +24,32 @@ export default function Register() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setError('')
     
     if (formData.password !== formData.confirmPassword) {
-      alert('As senhas não coincidem')
+      setError('As senhas não coincidem')
+      toast.error('As senhas não coincidem')
+      return
+    }
+
+    if (formData.password.length < 6) {
+      setError('A senha deve ter no mínimo 6 caracteres')
+      toast.error('A senha deve ter no mínimo 6 caracteres')
       return
     }
 
     setLoading(true)
     
-    // TODO: Implementar registro
-    // Por enquanto, apenas redireciona
-    setTimeout(() => {
-      setLoading(false)
+    try {
+      await register(formData.name, formData.email, formData.password)
+      toast.success('Conta criada com sucesso!')
       navigate('/dashboard')
-    }, 1000)
+    } catch (err: any) {
+      setError(err.message || 'Erro ao criar conta. Tente novamente.')
+      toast.error(err.message || 'Erro ao criar conta')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -51,6 +67,12 @@ export default function Register() {
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-5">
+            {error && (
+              <div className="bg-red-500/20 border border-red-500/50 text-red-100 px-4 py-3 rounded-lg text-sm">
+                {error}
+              </div>
+            )}
+            
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-white/90 mb-2">
                 Nome Completo
@@ -62,7 +84,8 @@ export default function Register() {
                 value={formData.name}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent backdrop-blur-sm"
+                disabled={loading}
+                className="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent backdrop-blur-sm disabled:opacity-50"
                 placeholder="Seu nome"
               />
             </div>
@@ -78,7 +101,8 @@ export default function Register() {
                 value={formData.email}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent backdrop-blur-sm"
+                disabled={loading}
+                className="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent backdrop-blur-sm disabled:opacity-50"
                 placeholder="seu@email.com"
               />
             </div>
@@ -95,7 +119,8 @@ export default function Register() {
                 onChange={handleChange}
                 required
                 minLength={6}
-                className="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent backdrop-blur-sm"
+                disabled={loading}
+                className="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent backdrop-blur-sm disabled:opacity-50"
                 placeholder="Mínimo 6 caracteres"
               />
             </div>
@@ -112,7 +137,8 @@ export default function Register() {
                 onChange={handleChange}
                 required
                 minLength={6}
-                className="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent backdrop-blur-sm"
+                disabled={loading}
+                className="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent backdrop-blur-sm disabled:opacity-50"
                 placeholder="Confirme sua senha"
               />
             </div>
