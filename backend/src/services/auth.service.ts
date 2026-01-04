@@ -5,7 +5,7 @@ import { AuthenticationError, ValidationError } from '../utils/errors.js';
 import { registerSchema, loginSchema } from '../validators/auth.validator.js';
 
 export const register = async (data: { email: string; password: string; name: string }) => {
-  // Validar dados
+  // Validar dados (Zod já lança erro de validação automaticamente)
   const validatedData = registerSchema.parse(data);
 
   // Verificar se usuário já existe
