@@ -11,6 +11,9 @@ import Home from './pages/Home'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import Dashboard from './pages/Dashboard'
+import Feed from './pages/Feed'
+import Community from './pages/Community'
+import Marketplace from './pages/Marketplace'
 
 // Components
 import { ProtectedRoute } from './components/ProtectedRoute'
@@ -33,6 +36,54 @@ function App() {
                   <Header />
                   <main className="flex-1">
                     <Dashboard />
+                  </main>
+                  <Footer />
+                </div>
+              </ProtectedRoute>
+            }
+          />
+          
+          {/* Feed Social */}
+          <Route
+            path="/feed"
+            element={
+              <ProtectedRoute>
+                <div className="min-h-screen flex flex-col">
+                  <Header />
+                  <main className="flex-1">
+                    <Feed />
+                  </main>
+                  <Footer />
+                </div>
+              </ProtectedRoute>
+            }
+          />
+          
+          {/* Comunidade */}
+          <Route
+            path="/community"
+            element={
+              <ProtectedRoute>
+                <div className="min-h-screen flex flex-col">
+                  <Header />
+                  <main className="flex-1">
+                    <Community />
+                  </main>
+                  <Footer />
+                </div>
+              </ProtectedRoute>
+            }
+          />
+          
+          {/* Marketplace */}
+          <Route
+            path="/marketplace"
+            element={
+              <ProtectedRoute>
+                <div className="min-h-screen flex flex-col">
+                  <Header />
+                  <main className="flex-1">
+                    <Marketplace />
                   </main>
                   <Footer />
                 </div>

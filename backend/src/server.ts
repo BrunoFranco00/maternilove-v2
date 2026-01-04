@@ -7,6 +7,9 @@ import logger from './utils/logger.js';
 import { errorHandler } from './middleware/errorHandler.middleware.js';
 import { generalLimiter } from './middleware/rateLimiter.middleware.js';
 import authRoutes from './routes/auth.routes.js';
+import socialRoutes from './routes/social.routes.js';
+import communityRoutes from './routes/community.routes.js';
+import marketplaceRoutes from './routes/marketplace.routes.js';
 
 dotenv.config();
 
@@ -84,6 +87,9 @@ app.get('/api', (req: Request, res: Response) => {
     endpoints: {
       health: '/health',
       auth: '/api/auth',
+      social: '/api/social',
+      community: '/api/community',
+      marketplace: '/api/marketplace',
       users: '/api/users',
     }
   });
@@ -91,6 +97,15 @@ app.get('/api', (req: Request, res: Response) => {
 
 // Rotas de autenticação
 app.use('/api/auth', authRoutes);
+
+// Rotas de rede social
+app.use('/api/social', socialRoutes);
+
+// Rotas de comunidade
+app.use('/api/community', communityRoutes);
+
+// Rotas de marketplace
+app.use('/api/marketplace', marketplaceRoutes);
 
 // Placeholder Routes
 app.get('/api/users', (req: Request, res: Response) => {
