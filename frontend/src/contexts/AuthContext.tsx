@@ -50,6 +50,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       throw new Error('Erro ao fazer login');
     }
     
+    // A resposta já vem com { success, data }, então acessamos response.data diretamente
     const { user, tokens } = response.data;
     
     localStorage.setItem('accessToken', tokens.accessToken);
