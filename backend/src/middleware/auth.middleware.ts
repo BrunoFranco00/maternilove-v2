@@ -4,9 +4,9 @@ import { AuthenticationError } from '../utils/errors.js';
 
 export interface AuthRequest extends Request {
   user?: {
-    userId: string;
-    email: string;
-    role: string;
+    id: string;
+    email?: string;
+    role?: string;
   };
 }
 
@@ -21,7 +21,12 @@ export const authenticate = (req: AuthRequest, res: Response, next: NextFunction
     const token = authHeader.substring(7);
     const decoded = verifyAccessToken(token);
 
-    req.user = decoded;
+    // Mapear userId do token para id no req.user
+    req.user = {
+      id: decoded.userId,
+      email: decoded.email,
+      role: decoded.role,
+    };
     next();
   } catch (error) {
     next(new AuthenticationError('Invalid or expired token'));
@@ -34,7 +39,7 @@ export const authorize = (...roles: string[]) => {
       return next(new AuthenticationError());
     }
 
-    if (!roles.includes(req.user.role)) {
+    if (!req.user.role || !roles.includes(req.user.role)) {
       return next(new Error('Insufficient permissions'));
     }
 

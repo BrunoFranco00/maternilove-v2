@@ -103,7 +103,7 @@ export const getPosts = async (req: Request, res: Response) => {
 // POST /api/community/posts - Criar post
 export const createPost = async (req: AuthRequest, res: Response) => {
   try {
-    const userId = req.user?.userId;
+    const userId = req.user?.id;
     if (!userId) {
       return res.status(401).json({
         success: false,
@@ -229,7 +229,7 @@ export const getPost = async (req: Request, res: Response) => {
 // POST /api/community/posts/:id/comments - Comentar post
 export const createComment = async (req: AuthRequest, res: Response) => {
   try {
-    const userId = req.user?.userId;
+    const userId = req.user?.id;
     if (!userId) {
       return res.status(401).json({
         success: false,

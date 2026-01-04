@@ -150,7 +150,7 @@ export const getProduct = async (req: Request, res: Response) => {
 // POST /api/marketplace/products/:id/reviews - Criar review
 export const createReview = async (req: AuthRequest, res: Response) => {
   try {
-    const userId = req.user?.userId;
+    const userId = req.user?.id;
     if (!userId) {
       return res.status(401).json({
         success: false,
@@ -202,7 +202,7 @@ export const createReview = async (req: AuthRequest, res: Response) => {
 // GET /api/marketplace/orders - Listar pedidos do usuário
 export const getOrders = async (req: AuthRequest, res: Response) => {
   try {
-    const userId = req.user?.userId;
+    const userId = req.user?.id;
     if (!userId) {
       return res.status(401).json({
         success: false,
@@ -245,7 +245,7 @@ export const getOrders = async (req: AuthRequest, res: Response) => {
 // POST /api/marketplace/orders - Criar pedido
 export const createOrder = async (req: AuthRequest, res: Response) => {
   try {
-    const userId = req.user?.userId;
+    const userId = req.user?.id;
     if (!userId) {
       return res.status(401).json({
         success: false,
