@@ -17,6 +17,42 @@ const app: Express = express();
 const PORT = Number(process.env.PORT) || 3000;
 
 // ============================================================================
+// VALIDAÇÃO DE VARIÁVEIS OBRIGATÓRIAS NO BOOT
+// ============================================================================
+
+const requiredEnvVars = {
+  DATABASE_URL: process.env.DATABASE_URL,
+  JWT_SECRET: process.env.JWT_SECRET,
+};
+
+// Em produção, validar variáveis obrigatórias
+if (process.env.NODE_ENV === 'production') {
+  const missingVars = Object.entries(requiredEnvVars)
+    .filter(([_, value]) => !value)
+    .map(([key]) => key);
+
+  if (missingVars.length > 0) {
+    console.error('❌ ERRO: Variáveis de ambiente obrigatórias não configuradas:');
+    missingVars.forEach((key) => {
+      console.error(`   - ${key}`);
+    });
+    console.error('\nConfigure essas variáveis no Railway antes de iniciar o servidor.');
+    process.exit(1);
+  }
+}
+
+// Logs claros no boot
+console.log('');
+console.log('🔧 Configuração do Servidor:');
+console.log(`   PORT: ${PORT}`);
+console.log(`   NODE_ENV: ${process.env.NODE_ENV || 'development'}`);
+console.log(`   FRONTEND_URL: ${process.env.FRONTEND_URL || 'não configurado'}`);
+console.log(`   CORS_ORIGIN: ${process.env.CORS_ORIGIN || 'não configurado'}`);
+console.log(`   DATABASE_URL: ${process.env.DATABASE_URL ? '✅ configurado' : '❌ não configurado'}`);
+console.log(`   JWT_SECRET: ${process.env.JWT_SECRET ? '✅ configurado' : '⚠️ usando fallback'}`);
+console.log('');
+
+// ============================================================================
 // CONFIGURAR TRUST PROXY (Para Railway/Vercel)
 // ============================================================================
 app.set('trust proxy', 1); // Confiar no primeiro proxy (Railway)
@@ -30,13 +66,40 @@ app.use(helmet());
 app.use(generalLimiter);
 
 // CORS Configuration - Production Ready
-const allowedOrigins = process.env.FRONTEND_URL 
-  ? [process.env.FRONTEND_URL]
-  : [
-      'http://localhost:5173',
-      'http://localhost:3000',
-      ...(process.env.CORS_ORIGIN?.split(',').filter(Boolean) || []),
-    ];
+// Whitelist explícita de origens permitidas
+const allowedOrigins: string[] = [];
+
+// 1. Priorizar FRONTEND_URL se configurado
+if (process.env.FRONTEND_URL) {
+  allowedOrigins.push(process.env.FRONTEND_URL);
+}
+
+// 2. Adicionar origens do CORS_ORIGIN (separadas por vírgula)
+if (process.env.CORS_ORIGIN) {
+  const corsOrigins = process.env.CORS_ORIGIN.split(',').filter(Boolean);
+  allowedOrigins.push(...corsOrigins);
+}
+
+// 3. Fallback: Adicionar origens padrão de desenvolvimento
+if (process.env.NODE_ENV !== 'production') {
+  allowedOrigins.push(
+    'http://localhost:5173', // Vite dev server
+    'http://localhost:3000', // Outro dev server
+  );
+} else {
+  // 4. Em produção, adicionar Vercel explicitamente se não estiver na lista
+  const vercelOrigin = 'https://maternilove-v2.vercel.app';
+  if (!allowedOrigins.includes(vercelOrigin)) {
+    allowedOrigins.push(vercelOrigin);
+  }
+}
+
+// Log das origens permitidas
+console.log('🌐 CORS - Origens permitidas:');
+allowedOrigins.forEach((origin) => {
+  console.log(`   ✅ ${origin}`);
+});
+console.log('');
 
 app.use(cors({
   origin: (origin, callback) => {
@@ -198,6 +261,18 @@ const server = app.listen(PORT, '0.0.0.0', () => {
   console.log('');
   console.log('🚀 Materni Love Backend Server');
   console.log(`📍 Server running on: 0.0.0.0:${PORT}`);
+  console.log('');
+  console.log('📡 Endpoints disponíveis:');
+  console.log('   GET  /health - Healthcheck');
+  console.log('   GET  /health/live - Liveness probe');
+  console.log('   GET  /health/ready - Readiness probe');
+  console.log('   GET  /api - API info');
+  console.log('   POST /api/auth/register - Registrar usuário');
+  console.log('   POST /api/auth/login - Login');
+  console.log('   GET  /api/social/feed - Feed social');
+  console.log('   GET  /api/community - Comunidade');
+  console.log('   GET  /api/marketplace/products - Marketplace');
+  console.log('');
   console.log('✨ Ready to receive requests!');
   console.log('');
 });
