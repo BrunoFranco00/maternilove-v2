@@ -2,7 +2,7 @@ import express, { Express, Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
-import { prisma } from './config/database.js';
+import { prisma } from './config/prisma.js';
 import logger from './utils/logger.js';
 import { errorHandler } from './middleware/errorHandler.middleware.js';
 import { generalLimiter } from './middleware/rateLimiter.middleware.js';
@@ -14,7 +14,7 @@ import marketplaceRoutes from './routes/marketplace.routes.js';
 dotenv.config();
 
 const app: Express = express();
-const PORT = process.env.PORT || 3000;
+const PORT = Number(process.env.PORT) || 3000;
 
 // ============================================================================
 // CONFIGURAR TRUST PROXY (Para Railway/Vercel)
@@ -29,29 +29,34 @@ app.set('trust proxy', 1); // Confiar no primeiro proxy (Railway)
 app.use(helmet());
 app.use(generalLimiter);
 
-// CORS Configuration - Seguro
-const allowedOrigins = [
-  'http://localhost:5173',
-  'http://localhost:3000',
-  ...(process.env.CORS_ORIGIN?.split(',') || []),
-  /^https:\/\/.*\.vercel\.app$/,
-  process.env.FRONTEND_URL,
-].filter(Boolean);
+// CORS Configuration - Production Ready
+const allowedOrigins = process.env.FRONTEND_URL 
+  ? [process.env.FRONTEND_URL]
+  : [
+      'http://localhost:5173',
+      'http://localhost:3000',
+      ...(process.env.CORS_ORIGIN?.split(',').filter(Boolean) || []),
+    ];
 
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin) return callback(null, true);
+    // Permitir requisições sem origin (ex: Postman, curl)
+    if (!origin) {
+      return callback(null, true);
+    }
     
-    const isAllowed = allowedOrigins.some(allowed => {
-      if (allowed instanceof RegExp) return allowed.test(origin);
-      return allowed === origin;
-    });
-    
-    if (isAllowed) {
+    // Verificar se origin está na lista permitida
+    if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      logger.warn(`CORS blocked origin: ${origin}`);
-      callback(new Error('Not allowed by CORS'));
+      // Em desenvolvimento, logar mas permitir
+      if (process.env.NODE_ENV === 'development') {
+        logger.warn(`CORS: Allowing origin in dev: ${origin}`);
+        callback(null, true);
+      } else {
+        logger.warn(`CORS blocked origin: ${origin}`);
+        callback(new Error('Not allowed by CORS'));
+      }
     }
   },
   credentials: true,
@@ -66,10 +71,59 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // ROTAS
 // ============================================================================
 
-// Health Check
+// ============================================================================
+// HEALTHCHECK ENDPOINTS (Railway Compatible)
+// ============================================================================
+
+// Liveness Probe - Não toca banco, resposta imediata
+app.get('/health/live', (req: Request, res: Response) => {
+  res.status(200).json({ 
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    service: 'maternilove-backend'
+  });
+});
+
+// Readiness Probe - Testa banco com timeout
+app.get('/health/ready', async (req: Request, res: Response) => {
+  try {
+    // Timeout de 1 segundo para não bloquear Railway
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Database timeout')), 1000)
+    );
+    
+    await Promise.race([
+      prisma.$queryRaw`SELECT 1`,
+      timeoutPromise
+    ]);
+    
+    res.status(200).json({ 
+      status: 'ready', 
+      timestamp: new Date().toISOString(),
+      database: 'connected'
+    });
+  } catch (error) {
+    logger.error('Readiness check failed', { error });
+    res.status(503).json({ 
+      status: 'not ready', 
+      timestamp: new Date().toISOString(),
+      database: 'disconnected'
+    });
+  }
+});
+
+// Health Check Legacy (mantido para compatibilidade)
 app.get('/health', async (req: Request, res: Response) => {
   try {
-    await prisma.$queryRaw`SELECT 1`;
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Database timeout')), 1000)
+    );
+    
+    await Promise.race([
+      prisma.$queryRaw`SELECT 1`,
+      timeoutPromise
+    ]);
+    
     res.json({ 
       status: 'ok', 
       timestamp: new Date().toISOString(),
@@ -136,32 +190,49 @@ app.use((req: Request, res: Response) => {
 });
 
 // ============================================================================
-// GRACEFUL SHUTDOWN
-// ============================================================================
-
-process.on('SIGINT', async () => {
-  logger.info('Shutting down gracefully...');
-  await prisma.$disconnect();
-  process.exit(0);
-});
-
-process.on('SIGTERM', async () => {
-  logger.info('Shutting down gracefully...');
-  await prisma.$disconnect();
-  process.exit(0);
-});
-
-// ============================================================================
 // START SERVER
 // ============================================================================
 
-app.listen(PORT, () => {
-  logger.info(`Server running on http://localhost:${PORT}`);
+const server = app.listen(PORT, '0.0.0.0', () => {
+  logger.info(`Backend running on 0.0.0.0:${PORT}`);
   console.log('');
   console.log('🚀 Materni Love Backend Server');
-  console.log(`📍 Server running on: http://localhost:${PORT}`);
+  console.log(`📍 Server running on: 0.0.0.0:${PORT}`);
   console.log('✨ Ready to receive requests!');
   console.log('');
 });
+
+// ============================================================================
+// GRACEFUL SHUTDOWN (HTTP → DB → EXIT)
+// ============================================================================
+
+const shutdown = async (signal: string) => {
+  logger.info(`Received ${signal}. Starting graceful shutdown.`);
+  
+  // 1. Fechar servidor HTTP (não aceita novas conexões)
+  server.close(async () => {
+    logger.info('HTTP server closed');
+    
+    // 2. Desconectar Prisma (fecha pool de conexões)
+    try {
+      await prisma.$disconnect();
+      logger.info('Database connection closed');
+    } catch (error) {
+      logger.error('Error disconnecting database', { error });
+    }
+    
+    // 3. Finalizar processo
+    process.exit(0);
+  });
+
+  // Timeout de segurança: força shutdown após 30s
+  setTimeout(() => {
+    logger.error('Force shutdown after 30s timeout');
+    process.exit(1);
+  }, 30000);
+};
+
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT', () => shutdown('SIGINT'));
 
 export default app;

@@ -1,5 +1,5 @@
 import bcrypt from 'bcryptjs';
-import { prisma } from '../config/database.js';
+import { prisma } from '../config/prisma.js';
 import { generateAccessToken, generateRefreshToken, type TokenPayload } from '../utils/jwt.js';
 import { AuthenticationError, ValidationError } from '../utils/errors.js';
 import { registerSchema, loginSchema } from '../validators/auth.validator.js';

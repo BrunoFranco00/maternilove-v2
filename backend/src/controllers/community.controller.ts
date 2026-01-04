@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { prisma } from '../config/database.js';
+import { prisma } from '../config/prisma.js';
 import logger from '../utils/logger.js';
 import { AuthRequest } from '../middleware/auth.middleware.js';
 
