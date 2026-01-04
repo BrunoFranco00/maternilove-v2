@@ -8,17 +8,15 @@ export interface TokenPayload {
 }
 
 export const generateAccessToken = (payload: TokenPayload): string => {
-  const options: SignOptions = {
+  return jwt.sign(payload, jwtConfig.accessTokenSecret, {
     expiresIn: jwtConfig.accessTokenExpiry,
-  };
-  return jwt.sign(payload, jwtConfig.accessTokenSecret, options);
+  } as SignOptions);
 };
 
 export const generateRefreshToken = (payload: TokenPayload): string => {
-  const options: SignOptions = {
+  return jwt.sign(payload, jwtConfig.refreshTokenSecret, {
     expiresIn: jwtConfig.refreshTokenExpiry,
-  };
-  return jwt.sign(payload, jwtConfig.refreshTokenSecret, options);
+  } as SignOptions);
 };
 
 export const verifyAccessToken = (token: string): TokenPayload => {
