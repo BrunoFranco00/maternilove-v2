@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "build": "tsc",
+    "build": "npx tsc",
     "postinstall": "prisma generate",
     "prestart": "prisma migrate deploy",
     "start": "node dist/server.js",
