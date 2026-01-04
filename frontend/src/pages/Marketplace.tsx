@@ -35,14 +35,14 @@ export default function Marketplace() {
   const loadProducts = async () => {
     try {
       setLoading(true)
-      const params = search ? { search } : {}
+      const query = search ? `?search=${encodeURIComponent(search)}` : ''
       const response = await api.get<{
         success: boolean
         data: { products: Product[] }
-      }>('/api/marketplace/products', { params })
+      }>(`/api/marketplace/products${query}`)
 
-      if (response.data.success) {
-        setProducts(response.data.data.products)
+      if (response.success) {
+        setProducts(response.data.products)
       }
     } catch (error: any) {
       toast.error('Erro ao carregar produtos')

@@ -64,8 +64,8 @@ export default function Community() {
         data: Category[]
       }>('/api/community/categories')
 
-      if (response.data.success) {
-        setCategories(response.data.data)
+      if (response.success) {
+        setCategories(response.data)
       }
     } catch (error: any) {
       toast.error('Erro ao carregar categorias')
@@ -76,14 +76,14 @@ export default function Community() {
   const loadPosts = async () => {
     try {
       setLoading(true)
-      const params = selectedCategory ? { categoryId: selectedCategory } : {}
+      const query = selectedCategory ? `?categoryId=${selectedCategory}` : ''
       const response = await api.get<{
         success: boolean
         data: { posts: CommunityPost[] }
-      }>('/api/community/posts', { params })
+      }>(`/api/community/posts${query}`)
 
-      if (response.data.success) {
-        setPosts(response.data.data.posts)
+      if (response.success) {
+        setPosts(response.data.posts)
       }
     } catch (error: any) {
       toast.error('Erro ao carregar posts')
@@ -105,8 +105,8 @@ export default function Community() {
         data: CommunityPost
       }>('/api/community/posts', newPost)
 
-      if (response.data.success) {
-        setPosts([response.data.data, ...posts])
+      if (response.success) {
+        setPosts([response.data, ...posts])
         setNewPost({ categoryId: '', title: '', content: '' })
         setShowCreatePost(false)
         toast.success('Post criado com sucesso!')

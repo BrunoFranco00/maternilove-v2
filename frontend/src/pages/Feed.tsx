@@ -49,8 +49,8 @@ export default function Feed() {
         data: { posts: Post[] }
       }>('/api/social/feed')
       
-      if (response.data.success) {
-        setPosts(response.data.data.posts)
+      if (response.success) {
+        setPosts(response.data.posts)
       }
     } catch (error: any) {
       toast.error('Erro ao carregar feed')
@@ -73,8 +73,8 @@ export default function Feed() {
         images: [],
       })
 
-      if (response.data.success) {
-        setPosts([response.data.data, ...posts])
+      if (response.success) {
+        setPosts([response.data, ...posts])
         setNewPostContent('')
         toast.success('Post criado com sucesso!')
       }
@@ -98,13 +98,13 @@ export default function Feed() {
         data: { liked: boolean }
       }>(`/api/social/posts/${postId}/like`)
 
-      if (response.data.success) {
+      if (response.success) {
         setPosts(posts.map(post => {
           if (post.id === postId) {
             return {
               ...post,
-              isLiked: response.data.data.liked,
-              likesCount: response.data.data.liked
+              isLiked: response.data.liked,
+              likesCount: response.data.liked
                 ? post.likesCount + 1
                 : post.likesCount - 1,
             }
@@ -129,12 +129,12 @@ export default function Feed() {
         text: commentText[postId],
       })
 
-      if (response.data.success) {
+      if (response.success) {
         setPosts(posts.map(post => {
           if (post.id === postId) {
             return {
               ...post,
-              comments: [response.data.data, ...post.comments],
+              comments: [response.data, ...post.comments],
               commentsCount: post.commentsCount + 1,
             }
           }
