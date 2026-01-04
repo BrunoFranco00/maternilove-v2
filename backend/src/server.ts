@@ -1,13 +1,16 @@
 import express, { Express, Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import { PrismaClient } from '@prisma/client';
 import dotenv from 'dotenv';
+import { prisma } from './config/database.js';
+import logger from './utils/logger.js';
+import { errorHandler } from './middleware/errorHandler.middleware.js';
+import { generalLimiter } from './middleware/rateLimiter.middleware.js';
+import authRoutes from './routes/auth.routes.js';
 
 dotenv.config();
 
 const app: Express = express();
-const prisma = new PrismaClient();
 const PORT = process.env.PORT || 3000;
 
 // ============================================================================
@@ -15,45 +18,40 @@ const PORT = process.env.PORT || 3000;
 // ============================================================================
 
 app.use(helmet());
+app.use(generalLimiter);
 
-// CORS Configuration - Aceita Vercel e outros domínios
+// CORS Configuration - Seguro
 const allowedOrigins = [
-  'http://localhost:5173', // Frontend local
-  'http://localhost:3000', // Backend local (para testes)
+  'http://localhost:5173',
+  'http://localhost:3000',
   ...(process.env.CORS_ORIGIN?.split(',') || []),
-  // Aceita qualquer domínio do Vercel (*.vercel.app)
   /^https:\/\/.*\.vercel\.app$/,
-  // Aceita domínio customizado do Vercel (se configurado)
-  process.env.VERCEL_URL && `https://${process.env.VERCEL_URL}`,
   process.env.FRONTEND_URL,
 ].filter(Boolean);
 
 app.use(cors({
   origin: (origin, callback) => {
-    // Permite requisições sem origin (mobile apps, Postman, etc)
     if (!origin) return callback(null, true);
     
-    // Verifica se o origin está na lista de permitidos
     const isAllowed = allowedOrigins.some(allowed => {
-      if (allowed instanceof RegExp) {
-        return allowed.test(origin);
-      }
+      if (allowed instanceof RegExp) return allowed.test(origin);
       return allowed === origin;
     });
     
     if (isAllowed) {
       callback(null, true);
     } else {
-      console.warn(`CORS blocked origin: ${origin}`);
-      callback(null, true); // Permite por padrão (ajuste se quiser mais restritivo)
+      logger.warn(`CORS blocked origin: ${origin}`);
+      callback(new Error('Not allowed by CORS'));
     }
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // ============================================================================
 // ROTAS
@@ -62,7 +60,6 @@ app.use(express.urlencoded({ extended: true }));
 // Health Check
 app.get('/health', async (req: Request, res: Response) => {
   try {
-    // Testa conexão com banco
     await prisma.$queryRaw`SELECT 1`;
     res.json({ 
       status: 'ok', 
@@ -70,6 +67,7 @@ app.get('/health', async (req: Request, res: Response) => {
       database: 'connected'
     });
   } catch (error) {
+    logger.error('Health check failed', { error });
     res.status(500).json({ 
       status: 'error', 
       timestamp: new Date().toISOString(),
@@ -85,56 +83,35 @@ app.get('/api', (req: Request, res: Response) => {
     version: '1.0.0',
     endpoints: {
       health: '/health',
+      auth: '/api/auth',
       users: '/api/users',
-      journey: '/api/journey',
-      moments: '/api/moments',
-      community: '/api/community',
-      marketplace: '/api/marketplace',
-      admin: '/api/admin',
     }
   });
 });
+
+// Rotas de autenticação
+app.use('/api/auth', authRoutes);
 
 // Placeholder Routes
 app.get('/api/users', (req: Request, res: Response) => {
   res.json({ message: 'Users endpoint' });
 });
 
-app.get('/api/journey', (req: Request, res: Response) => {
-  res.json({ message: 'Journey endpoint' });
-});
-
-app.get('/api/moments', (req: Request, res: Response) => {
-  res.json({ message: 'Moments endpoint' });
-});
-
-app.get('/api/community', (req: Request, res: Response) => {
-  res.json({ message: 'Community endpoint' });
-});
-
-app.get('/api/marketplace', (req: Request, res: Response) => {
-  res.json({ message: 'Marketplace endpoint' });
-});
-
-app.get('/api/admin', (req: Request, res: Response) => {
-  res.json({ message: 'Admin endpoint' });
-});
-
 // ============================================================================
 // ERROR HANDLING
 // ============================================================================
 
-app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-  console.error(err);
-  res.status(500).json({ error: 'Internal Server Error' });
-});
+app.use(errorHandler);
 
 // ============================================================================
 // 404 HANDLER
 // ============================================================================
 
 app.use((req: Request, res: Response) => {
-  res.status(404).json({ error: 'Not Found' });
+  res.status(404).json({ 
+    success: false,
+    error: { message: 'Not Found' } 
+  });
 });
 
 // ============================================================================
@@ -142,13 +119,13 @@ app.use((req: Request, res: Response) => {
 // ============================================================================
 
 process.on('SIGINT', async () => {
-  console.log('\n🛑 Shutting down gracefully...');
+  logger.info('Shutting down gracefully...');
   await prisma.$disconnect();
   process.exit(0);
 });
 
 process.on('SIGTERM', async () => {
-  console.log('\n🛑 Shutting down gracefully...');
+  logger.info('Shutting down gracefully...');
   await prisma.$disconnect();
   process.exit(0);
 });
@@ -158,6 +135,7 @@ process.on('SIGTERM', async () => {
 // ============================================================================
 
 app.listen(PORT, () => {
+  logger.info(`Server running on http://localhost:${PORT}`);
   console.log('');
   console.log('🚀 Materni Love Backend Server');
   console.log(`📍 Server running on: http://localhost:${PORT}`);
