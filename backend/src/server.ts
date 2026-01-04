@@ -17,53 +17,9 @@ const app: Express = express();
 const PORT = process.env.PORT || 3000;
 
 // ============================================================================
-// EXECUTAR MIGRATIONS NA INICIALIZAÇÃO
+// MIDDLEWARE
 // ============================================================================
-
-async function runMigrations() {
-  try {
-    logger.info('Executando migrations...');
-    const { exec } = await import('child_process');
-    const { promisify } = await import('util');
-    const execAsync = promisify(exec);
-    
-    await execAsync('npx prisma migrate deploy', {
-      cwd: process.cwd(),
-      env: process.env,
-    });
-    
-    logger.info('✅ Migrations executadas com sucesso');
-  } catch (error: any) {
-    logger.error('❌ Erro ao executar migrations', { error: error.message });
-    // Tentar db push como fallback
-    try {
-      logger.info('Tentando db push como fallback...');
-      const { exec } = await import('child_process');
-      const { promisify } = await import('util');
-      const execAsync = promisify(exec);
-      
-      await execAsync('npx prisma db push --accept-data-loss', {
-        cwd: process.cwd(),
-        env: process.env,
-      });
-      
-      logger.info('✅ Schema aplicado com db push');
-    } catch (pushError: any) {
-      logger.error('❌ Erro ao fazer db push', { error: pushError.message });
-      logger.warn('Continuando mesmo assim...');
-    }
-  }
-}
-
-// Executar migrations antes de iniciar o servidor
-runMigrations().then(() => {
-  startServer();
-}).catch((error) => {
-  logger.error('Erro fatal ao executar migrations', { error });
-  process.exit(1);
-});
-
-function startServer() {
+// Nota: Migrations são executadas automaticamente via "prestart" no package.json
   // ============================================================================
   // MIDDLEWARE
   // ============================================================================
