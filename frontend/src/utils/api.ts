@@ -97,6 +97,5 @@ export const apiEndpoints = {
   health: () => api.get<{ status: string; timestamp: string; database: string }>('/health'),
 };
 
-if (import.meta.env?.DEV) {
-  console.log('🔗 API URL:', API_BASE_URL);
-}
+// Log da URL da API em todos os ambientes para debug
+console.log('🔗 API URL:', API_BASE_URL);
