@@ -35,8 +35,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const login = async (email: string, password: string) => {
-    const response = await api.post('/api/auth/login', { email, password });
-    const { user, tokens } = response.data.data;
+    const response = await api.post<{
+      success: boolean;
+      data: {
+        user: User;
+        tokens: {
+          accessToken: string;
+          refreshToken: string;
+        };
+      };
+    }>('/api/auth/login', { email, password });
+    
+    const { user, tokens } = response.data;
     
     localStorage.setItem('accessToken', tokens.accessToken);
     localStorage.setItem('refreshToken', tokens.refreshToken);
@@ -44,8 +54,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const register = async (name: string, email: string, password: string) => {
-    const response = await api.post('/api/auth/register', { name, email, password });
-    const { user, tokens } = response.data.data;
+    const response = await api.post<{
+      success: boolean;
+      data: {
+        user: User;
+        tokens: {
+          accessToken: string;
+          refreshToken: string;
+        };
+      };
+    }>('/api/auth/register', { name, email, password });
+    
+    const { user, tokens } = response.data;
     
     localStorage.setItem('accessToken', tokens.accessToken);
     localStorage.setItem('refreshToken', tokens.refreshToken);
