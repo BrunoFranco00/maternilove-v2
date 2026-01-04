@@ -17,6 +17,11 @@ const app: Express = express();
 const PORT = process.env.PORT || 3000;
 
 // ============================================================================
+// CONFIGURAR TRUST PROXY (Para Railway/Vercel)
+// ============================================================================
+app.set('trust proxy', 1); // Confiar no primeiro proxy (Railway)
+
+// ============================================================================
 // MIDDLEWARE
 // ============================================================================
 // Nota: Migrations são executadas automaticamente via "prestart" no package.json
