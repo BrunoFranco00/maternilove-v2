@@ -35,50 +35,70 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const login = async (email: string, password: string) => {
-    const response = await api.post<{
-      success: boolean;
-      data: {
-        user: User;
-        tokens: {
-          accessToken: string;
-          refreshToken: string;
+    try {
+      console.log('🔐 Tentando fazer login...', { email });
+      const response = await api.post<{
+        success: boolean;
+        data: {
+          user: User;
+          tokens: {
+            accessToken: string;
+            refreshToken: string;
+          };
         };
-      };
-    }>('/api/auth/login', { email, password });
-    
-    if (!response.success) {
-      throw new Error('Erro ao fazer login');
+      }>('/api/auth/login', { email, password });
+      
+      console.log('📥 Resposta do login:', response);
+      
+      if (!response.success) {
+        console.error('❌ Login falhou:', response);
+        throw new Error('Erro ao fazer login');
+      }
+      
+      // A resposta já vem com { success, data }, então acessamos response.data diretamente
+      const { user, tokens } = response.data;
+      
+      localStorage.setItem('accessToken', tokens.accessToken);
+      localStorage.setItem('refreshToken', tokens.refreshToken);
+      setUser(user);
+      console.log('✅ Login realizado com sucesso!', { user: user.email });
+    } catch (error: any) {
+      console.error('❌ Erro no login:', error);
+      throw error;
     }
-    
-    // A resposta já vem com { success, data }, então acessamos response.data diretamente
-    const { user, tokens } = response.data;
-    
-    localStorage.setItem('accessToken', tokens.accessToken);
-    localStorage.setItem('refreshToken', tokens.refreshToken);
-    setUser(user);
   };
 
   const register = async (name: string, email: string, password: string) => {
-    const response = await api.post<{
-      success: boolean;
-      data: {
-        user: User;
-        tokens: {
-          accessToken: string;
-          refreshToken: string;
+    try {
+      console.log('📝 Tentando criar conta...', { name, email });
+      const response = await api.post<{
+        success: boolean;
+        data: {
+          user: User;
+          tokens: {
+            accessToken: string;
+            refreshToken: string;
+          };
         };
-      };
-    }>('/api/auth/register', { name, email, password });
-    
-    if (!response.success) {
-      throw new Error('Erro ao criar conta');
+      }>('/api/auth/register', { name, email, password });
+      
+      console.log('📥 Resposta do registro:', response);
+      
+      if (!response.success) {
+        console.error('❌ Registro falhou:', response);
+        throw new Error('Erro ao criar conta');
+      }
+      
+      const { user, tokens } = response.data;
+      
+      localStorage.setItem('accessToken', tokens.accessToken);
+      localStorage.setItem('refreshToken', tokens.refreshToken);
+      setUser(user);
+      console.log('✅ Conta criada com sucesso!', { user: user.email });
+    } catch (error: any) {
+      console.error('❌ Erro no registro:', error);
+      throw error;
     }
-    
-    const { user, tokens } = response.data;
-    
-    localStorage.setItem('accessToken', tokens.accessToken);
-    localStorage.setItem('refreshToken', tokens.refreshToken);
-    setUser(user);
   };
 
   const logout = () => {
