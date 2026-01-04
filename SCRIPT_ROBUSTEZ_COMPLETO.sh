@@ -453,7 +453,7 @@ EOF
 cat > src/services/auth.service.ts << 'EOF'
 import bcrypt from 'bcryptjs';
 import { prisma } from '../config/database.js';
-import { generateAccessToken, generateRefreshToken, TokenPayload } from '../utils/jwt.js';
+import { generateAccessToken, generateRefreshToken, type TokenPayload } from '../utils/jwt.js';
 import { AuthenticationError, ValidationError } from '../utils/errors.js';
 import { registerSchema, loginSchema } from '../validators/auth.validator.js';
 
