@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { AppError } from '../utils/errors.js';
-import { ValidationError as ZodValidationError } from 'zod';
+import { ZodError } from 'zod';
 import logger from '../utils/logger.js';
 
 export const errorHandler = (
@@ -10,12 +10,12 @@ export const errorHandler = (
   next: NextFunction
 ) => {
   // Tratar erros de validação do Zod
-  if (err instanceof ZodValidationError) {
+  if (err instanceof ZodError) {
     logger.warn(`Validation error: ${err.message}`, { path: req.path });
     return res.status(400).json({
       success: false,
       error: {
-        message: err.errors.map(e => e.message).join(', '),
+        message: err.errors.map((e) => e.message).join(', '),
       },
     });
   }
