@@ -66,8 +66,8 @@ app.use(helmet());
 app.use(generalLimiter);
 
 // CORS Configuration - Production Ready
-// Whitelist explícita de origens permitidas
-const allowedOrigins: string[] = [];
+// Whitelist explícita de origens permitidas (suporta string ou regex)
+const allowedOrigins: (string | RegExp)[] = [];
 
 // 1. Priorizar FRONTEND_URL se configurado
 if (process.env.FRONTEND_URL) {
@@ -87,9 +87,17 @@ if (process.env.NODE_ENV !== 'production') {
     'http://localhost:3000', // Outro dev server
   );
 } else {
-  // 4. Em produção, adicionar Vercel explicitamente se não estiver na lista
+  // 4. Em produção, adicionar padrão Vercel (todos os *.vercel.app)
+  // Esta regex permite:
+  // - https://maternilove-v2.vercel.app
+  // - https://maternilove-v2-git-branch.vercel.app
+  // - https://maternilove-v2-abc123.vercel.app
+  // - Qualquer subdomínio do Vercel
+  allowedOrigins.push(/^https:\/\/.*\.vercel\.app$/);
+  
+  // 5. Se FRONTEND_URL específico foi configurado, adicionar também
   const vercelOrigin = 'https://maternilove-v2.vercel.app';
-  if (!allowedOrigins.includes(vercelOrigin)) {
+  if (!allowedOrigins.some(o => typeof o === 'string' && o === vercelOrigin)) {
     allowedOrigins.push(vercelOrigin);
   }
 }
