@@ -105,7 +105,11 @@ if (process.env.NODE_ENV !== 'production') {
 // Log das origens permitidas
 console.log('🌐 CORS - Origens permitidas:');
 allowedOrigins.forEach((origin) => {
-  console.log(`   ✅ ${origin}`);
+  if (origin instanceof RegExp) {
+    console.log(`   ✅ ${origin.toString()} (regex)`);
+  } else {
+    console.log(`   ✅ ${origin}`);
+  }
 });
 console.log('');
 
@@ -116,8 +120,15 @@ app.use(cors({
       return callback(null, true);
     }
     
-    // Verificar se origin está na lista permitida
-    if (allowedOrigins.includes(origin)) {
+    // Verificar se origin está na lista permitida (string ou regex)
+    const isAllowed = allowedOrigins.some(allowed => {
+      if (allowed instanceof RegExp) {
+        return allowed.test(origin);
+      }
+      return allowed === origin;
+    });
+    
+    if (isAllowed) {
       callback(null, true);
     } else {
       // Em desenvolvimento, logar mas permitir
@@ -125,8 +136,9 @@ app.use(cors({
         logger.warn(`CORS: Allowing origin in dev: ${origin}`);
         callback(null, true);
       } else {
-        logger.warn(`CORS blocked origin: ${origin}`);
-        callback(new Error('Not allowed by CORS'));
+        logger.warn(`❌ CORS blocked origin: ${origin}`);
+        logger.warn(`   Allowed origins: ${allowedOrigins.map(o => o instanceof RegExp ? o.toString() : o).join(', ')}`);
+        callback(new Error(`Not allowed by CORS: ${origin}`));
       }
     }
   },
