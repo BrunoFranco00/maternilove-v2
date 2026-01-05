@@ -62,8 +62,9 @@ app.set('trust proxy', 1); // Confiar no primeiro proxy (Railway)
 // ============================================================================
 // Nota: Migrations são executadas automaticamente via "prestart" no package.json
 
-
 // CORS Configuration - Production Ready
+// IMPORTANTE: CORS deve ser aplicado ANTES de helmet e rate limiter
+// para que requisições OPTIONS (preflight) sejam tratadas corretamente
 // Whitelist explícita de origens permitidas (suporta string ou regex)
 const allowedOrigins: (string | RegExp)[] = [];
 
@@ -95,7 +96,7 @@ if (process.env.NODE_ENV !== 'production') {
   
   // 5. Se FRONTEND_URL específico foi configurado, adicionar também
   const vercelOrigin = 'https://maternilove-v2.vercel.app';
-  if (!allowedOrigins.some(o => typeof o === 'string' && o === vercelOrigin)) {
+  if (!allowedOrigins.includes(vercelOrigin)) {
     allowedOrigins.push(vercelOrigin);
   }
 }
@@ -144,6 +145,10 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
+
+// Aplicar Helmet e Rate Limiter DEPOIS do CORS
+app.use(helmet());
+app.use(generalLimiter);
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
@@ -296,6 +301,41 @@ const server = app.listen(PORT, '0.0.0.0', () => {
 });
 
 // ============================================================================
+// HANDLERS PARA ERROS NÃO TRATADOS (CRÍTICO PARA PRODUÇÃO)
+// ============================================================================
+
+// Handler para exceções não capturadas
+process.on('uncaughtException', (error: Error) => {
+  logger.error('❌ UNCAUGHT EXCEPTION - Processo será finalizado', {
+    error: error.message,
+    stack: error.stack,
+  });
+  console.error('❌ UNCAUGHT EXCEPTION:', error);
+  
+  // Tentar desconectar Prisma antes de sair
+  prisma.$disconnect()
+    .catch((disconnectError) => {
+      logger.error('Error disconnecting Prisma on uncaughtException', { error: disconnectError });
+    })
+    .finally(() => {
+      process.exit(1);
+    });
+});
+
+// Handler para Promises rejeitadas não tratadas
+process.on('unhandledRejection', (reason: any, promise: Promise<any>) => {
+  logger.error('❌ UNHANDLED REJECTION - Promise rejeitada não tratada', {
+    reason: reason instanceof Error ? reason.message : String(reason),
+    stack: reason instanceof Error ? reason.stack : undefined,
+  });
+  console.error('❌ UNHANDLED REJECTION:', reason);
+  
+  // Logar mas não finalizar processo imediatamente
+  // (alguns erros podem ser recuperáveis)
+  // Se for erro crítico do Prisma, o uncaughtException vai capturar
+});
+
+// ============================================================================
 // GRACEFUL SHUTDOWN (HTTP → DB → EXIT)
 // ============================================================================
 
@@ -327,5 +367,29 @@ const shutdown = async (signal: string) => {
 
 process.on('SIGTERM', () => shutdown('SIGTERM'));
 process.on('SIGINT', () => shutdown('SIGINT'));
+
+// ============================================================================
+// VERIFICAÇÃO DE CONEXÃO DO PRISMA NO BOOT
+// ============================================================================
+
+// Verificar conexão do Prisma após o servidor iniciar
+(async () => {
+  try {
+    await prisma.$connect();
+    logger.info('✅ Prisma Client conectado ao banco de dados');
+    console.log('✅ Prisma Client conectado ao banco de dados');
+  } catch (error: any) {
+    logger.error('❌ ERRO CRÍTICO: Falha ao conectar Prisma ao banco de dados', {
+      error: error.message,
+      stack: error.stack,
+    });
+    console.error('❌ ERRO CRÍTICO: Falha ao conectar Prisma ao banco de dados');
+    console.error('   Erro:', error.message);
+    console.error('   Verifique o DATABASE_URL no Railway');
+    
+    // Não finalizar processo aqui - deixar o uncaughtException tratar
+    // Mas logar claramente o problema
+  }
+})();
 
 export default app;
