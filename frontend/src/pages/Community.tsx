@@ -80,7 +80,7 @@ export default function Community() {
       const response = await api.get<{
         success: boolean
         data: { posts: CommunityPost[] }
-      }>(`/api/community/posts${query}`)
+      }>(`/community/posts${query}`)
 
       if (response.success) {
         setPosts(response.data.posts)

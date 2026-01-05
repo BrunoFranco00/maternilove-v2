@@ -39,7 +39,7 @@ export default function Marketplace() {
       const response = await api.get<{
         success: boolean
         data: { products: Product[] }
-      }>(`/api/marketplace/products${query}`)
+      }>(`/marketplace/products${query}`)
 
       if (response.success) {
         setProducts(response.data.products)

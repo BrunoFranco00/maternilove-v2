@@ -96,7 +96,7 @@ export default function Feed() {
       const response = await api.post<{
         success: boolean
         data: { liked: boolean }
-      }>(`/api/social/posts/${postId}/like`)
+      }>(`/social/posts/${postId}/like`)
 
       if (response.success) {
         setPosts(posts.map(post => {
@@ -125,7 +125,7 @@ export default function Feed() {
       const response = await api.post<{
         success: boolean
         data: Post['comments'][0]
-      }>(`/api/social/posts/${postId}/comments`, {
+      }>(`/social/posts/${postId}/comments`, {
         text: commentText[postId],
       })
 
