@@ -33,7 +33,7 @@ pnpm-debug.log*
 *.sublime-workspace
 
 # Prisma
-backend/prisma/migrations/
+# backend/prisma/migrations - REMOVIDO: migrations devem ser versionadas/
 
 # OS
 Thumbs.db
