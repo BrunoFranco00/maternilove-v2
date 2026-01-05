@@ -62,8 +62,6 @@ app.set('trust proxy', 1); // Confiar no primeiro proxy (Railway)
 // ============================================================================
 // Nota: Migrations são executadas automaticamente via "prestart" no package.json
 
-app.use(helmet());
-app.use(generalLimiter);
 
 // CORS Configuration - Production Ready
 // Whitelist explícita de origens permitidas (suporta string ou regex)
