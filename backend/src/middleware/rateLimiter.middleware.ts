@@ -6,6 +6,8 @@ export const generalLimiter = rateLimit({
   message: 'Too many requests from this IP, please try again later.',
   standardHeaders: true,
   legacyHeaders: false,
+  // Ignorar requisições OPTIONS (preflight) para não bloquear CORS
+  skip: (req) => req.method === 'OPTIONS',
 });
 
 export const authLimiter = rateLimit({
