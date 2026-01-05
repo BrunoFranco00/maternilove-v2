@@ -62,12 +62,11 @@ app.set('trust proxy', 1); // Confiar no primeiro proxy (Railway)
 // ============================================================================
 // Nota: Migrations são executadas automaticamente via "prestart" no package.json
 
-app.use(helmet());
-app.use(generalLimiter);
-
 // CORS Configuration - Production Ready
-// Whitelist explícita de origens permitidas
-const allowedOrigins: string[] = [];
+// IMPORTANTE: CORS deve ser aplicado ANTES de helmet e rate limiter
+// para que requisições OPTIONS (preflight) sejam tratadas corretamente
+// Whitelist explícita de origens permitidas (suporta string ou regex)
+const allowedOrigins: (string | RegExp)[] = [];
 
 // 1. Priorizar FRONTEND_URL se configurado
 if (process.env.FRONTEND_URL) {
@@ -87,7 +86,15 @@ if (process.env.NODE_ENV !== 'production') {
     'http://localhost:3000', // Outro dev server
   );
 } else {
-  // 4. Em produção, adicionar Vercel explicitamente se não estiver na lista
+  // 4. Em produção, adicionar padrão Vercel (todos os *.vercel.app)
+  // Esta regex permite:
+  // - https://maternilove-v2.vercel.app
+  // - https://maternilove-v2-git-branch.vercel.app
+  // - https://maternilove-v2-abc123.vercel.app
+  // - Qualquer subdomínio do Vercel
+  allowedOrigins.push(/^https:\/\/.*\.vercel\.app$/);
+  
+  // 5. Se FRONTEND_URL específico foi configurado, adicionar também
   const vercelOrigin = 'https://maternilove-v2.vercel.app';
   if (!allowedOrigins.includes(vercelOrigin)) {
     allowedOrigins.push(vercelOrigin);
@@ -97,7 +104,11 @@ if (process.env.NODE_ENV !== 'production') {
 // Log das origens permitidas
 console.log('🌐 CORS - Origens permitidas:');
 allowedOrigins.forEach((origin) => {
-  console.log(`   ✅ ${origin}`);
+  if (origin instanceof RegExp) {
+    console.log(`   ✅ ${origin.toString()} (regex)`);
+  } else {
+    console.log(`   ✅ ${origin}`);
+  }
 });
 console.log('');
 
@@ -108,8 +119,15 @@ app.use(cors({
       return callback(null, true);
     }
     
-    // Verificar se origin está na lista permitida
-    if (allowedOrigins.includes(origin)) {
+    // Verificar se origin está na lista permitida (string ou regex)
+    const isAllowed = allowedOrigins.some(allowed => {
+      if (allowed instanceof RegExp) {
+        return allowed.test(origin);
+      }
+      return allowed === origin;
+    });
+    
+    if (isAllowed) {
       callback(null, true);
     } else {
       // Em desenvolvimento, logar mas permitir
@@ -117,8 +135,9 @@ app.use(cors({
         logger.warn(`CORS: Allowing origin in dev: ${origin}`);
         callback(null, true);
       } else {
-        logger.warn(`CORS blocked origin: ${origin}`);
-        callback(new Error('Not allowed by CORS'));
+        logger.warn(`❌ CORS blocked origin: ${origin}`);
+        logger.warn(`   Allowed origins: ${allowedOrigins.map(o => o instanceof RegExp ? o.toString() : o).join(', ')}`);
+        callback(new Error(`Not allowed by CORS: ${origin}`));
       }
     }
   },
@@ -126,6 +145,10 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
+
+// Aplicar Helmet e Rate Limiter DEPOIS do CORS
+app.use(helmet());
+app.use(generalLimiter);
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
@@ -278,6 +301,41 @@ const server = app.listen(PORT, '0.0.0.0', () => {
 });
 
 // ============================================================================
+// HANDLERS PARA ERROS NÃO TRATADOS (CRÍTICO PARA PRODUÇÃO)
+// ============================================================================
+
+// Handler para exceções não capturadas
+process.on('uncaughtException', (error: Error) => {
+  logger.error('❌ UNCAUGHT EXCEPTION - Processo será finalizado', {
+    error: error.message,
+    stack: error.stack,
+  });
+  console.error('❌ UNCAUGHT EXCEPTION:', error);
+  
+  // Tentar desconectar Prisma antes de sair
+  prisma.$disconnect()
+    .catch((disconnectError) => {
+      logger.error('Error disconnecting Prisma on uncaughtException', { error: disconnectError });
+    })
+    .finally(() => {
+      process.exit(1);
+    });
+});
+
+// Handler para Promises rejeitadas não tratadas
+process.on('unhandledRejection', (reason: any, promise: Promise<any>) => {
+  logger.error('❌ UNHANDLED REJECTION - Promise rejeitada não tratada', {
+    reason: reason instanceof Error ? reason.message : String(reason),
+    stack: reason instanceof Error ? reason.stack : undefined,
+  });
+  console.error('❌ UNHANDLED REJECTION:', reason);
+  
+  // Logar mas não finalizar processo imediatamente
+  // (alguns erros podem ser recuperáveis)
+  // Se for erro crítico do Prisma, o uncaughtException vai capturar
+});
+
+// ============================================================================
 // GRACEFUL SHUTDOWN (HTTP → DB → EXIT)
 // ============================================================================
 
@@ -309,5 +367,29 @@ const shutdown = async (signal: string) => {
 
 process.on('SIGTERM', () => shutdown('SIGTERM'));
 process.on('SIGINT', () => shutdown('SIGINT'));
+
+// ============================================================================
+// VERIFICAÇÃO DE CONEXÃO DO PRISMA NO BOOT
+// ============================================================================
+
+// Verificar conexão do Prisma após o servidor iniciar
+(async () => {
+  try {
+    await prisma.$connect();
+    logger.info('✅ Prisma Client conectado ao banco de dados');
+    console.log('✅ Prisma Client conectado ao banco de dados');
+  } catch (error: any) {
+    logger.error('❌ ERRO CRÍTICO: Falha ao conectar Prisma ao banco de dados', {
+      error: error.message,
+      stack: error.stack,
+    });
+    console.error('❌ ERRO CRÍTICO: Falha ao conectar Prisma ao banco de dados');
+    console.error('   Erro:', error.message);
+    console.error('   Verifique o DATABASE_URL no Railway');
+    
+    // Não finalizar processo aqui - deixar o uncaughtException tratar
+    // Mas logar claramente o problema
+  }
+})();
 
 export default app;
