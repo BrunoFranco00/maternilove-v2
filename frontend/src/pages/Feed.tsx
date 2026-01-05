@@ -47,7 +47,7 @@ export default function Feed() {
       const response = await api.get<{
         success: boolean
         data: { posts: Post[] }
-      }>('/api/social/feed')
+      }>('/social/feed')
       
       if (response.success) {
         setPosts(response.data.posts)
@@ -68,7 +68,7 @@ export default function Feed() {
       const response = await api.post<{
         success: boolean
         data: Post
-      }>('/api/social/posts', {
+      }>('/social/posts', {
         content: newPostContent,
         images: [],
       })

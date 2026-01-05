@@ -62,7 +62,7 @@ export default function Community() {
       const response = await api.get<{
         success: boolean
         data: Category[]
-      }>('/api/community/categories')
+      }>('/community/categories')
 
       if (response.success) {
         setCategories(response.data)
@@ -103,7 +103,7 @@ export default function Community() {
       const response = await api.post<{
         success: boolean
         data: CommunityPost
-      }>('/api/community/posts', newPost)
+      }>('/community/posts', newPost)
 
       if (response.success) {
         setPosts([response.data, ...posts])

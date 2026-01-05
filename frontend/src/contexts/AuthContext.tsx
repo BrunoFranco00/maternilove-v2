@@ -46,7 +46,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             refreshToken: string;
           };
         };
-      }>('/api/auth/login', { email, password });
+      }>('/auth/login', { email, password });
       
       console.log('📥 Resposta do login:', response);
       
@@ -80,7 +80,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             refreshToken: string;
           };
         };
-      }>('/api/auth/register', { name, email, password });
+      }>('/auth/register', { name, email, password });
       
       console.log('📥 Resposta do registro:', response);
       
