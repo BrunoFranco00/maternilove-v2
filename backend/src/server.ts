@@ -94,9 +94,16 @@ if (process.env.NODE_ENV !== 'production') {
   // - Qualquer subdomínio do Vercel
   allowedOrigins.push(/^https:\/\/.*\.vercel\.app$/);
   
-  // 5. Se FRONTEND_URL específico foi configurado, adicionar também
+  // 5. Adicionar domínio customizado principal (maternilove.com)
+  // Este é o domínio público onde os usuários acessam o frontend
+  const customDomain = 'https://maternilove.com';
+  if (!allowedOrigins.some(o => typeof o === 'string' && o === customDomain)) {
+    allowedOrigins.push(customDomain);
+  }
+  
+  // 6. Se FRONTEND_URL específico foi configurado, adicionar também (fallback Vercel)
   const vercelOrigin = 'https://maternilove-v2.vercel.app';
-  if (!allowedOrigins.includes(vercelOrigin)) {
+  if (!allowedOrigins.some(o => typeof o === 'string' && o === vercelOrigin)) {
     allowedOrigins.push(vercelOrigin);
   }
 }

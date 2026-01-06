@@ -30,6 +30,7 @@ class ApiClient {
 
   private setupInterceptors() {
     // Interceptor para adicionar token
+    // TODO: Implementar interceptor do axios quando adicionar
   }
 
   async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
@@ -47,11 +48,14 @@ class ApiClient {
 
     if (!response.ok) {
       if (response.status === 401) {
+        // Token expirado, fazer logout
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
         window.location.href = '/login';
       }
       const errorData = await response.json().catch(() => ({ error: { message: response.statusText } }));
+      
+      // Extrair mensagem de erro do formato { success: false, error: { message: "..." } }
       const errorMessage = errorData.error?.message || errorData.message || `API Error: ${response.status}`;
       const error = new Error(errorMessage);
       (error as any).status = response.status;
@@ -107,7 +111,11 @@ export const apiEndpoints = {
       api.post('/auth/register', data),
   },
   health: () => {
+    // Healthcheck está em /health (sem /api) no backend
     const healthUrl = `${API_BASE_URL.replace(/\/$/, '')}/health`;
     return fetch(healthUrl).then(res => res.json());
   },
 };
+
+
+
