@@ -1,99 +1,36 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import './App.css'
 
-// Contexts
-import { AuthProvider } from './contexts/AuthContext'
-
-// Pages
-import Home from './pages/Home'
-import Login from './pages/Login'
-import Register from './pages/Register'
+// Pages do MVP
+import Onboarding from './pages/Onboarding'
 import Dashboard from './pages/Dashboard'
-import Feed from './pages/Feed'
-import Community from './pages/Community'
-import Marketplace from './pages/Marketplace'
-
-// Components
-import { ProtectedRoute } from './components/ProtectedRoute'
-import Header from './components/Layout/Header'
-import Footer from './components/Layout/Footer'
+import Checklist from './pages/Checklist'
+import ChatIA from './pages/ChatIA'
+import DailyLog from './pages/DailyLog'
+import Lives from './pages/Lives'
+import Terms from './pages/Terms'
 
 function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
+    <BrowserRouter>
+      <div className="min-h-screen bg-gray-50 text-gray-900 font-sans">
         <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <div className="min-h-screen flex flex-col">
-                  <Header />
-                  <main className="flex-1">
-                    <Dashboard />
-                  </main>
-                  <Footer />
-                </div>
-              </ProtectedRoute>
-            }
-          />
-          
-          {/* Feed Social */}
-          <Route
-            path="/feed"
-            element={
-              <ProtectedRoute>
-                <div className="min-h-screen flex flex-col">
-                  <Header />
-                  <main className="flex-1">
-                    <Feed />
-                  </main>
-                  <Footer />
-                </div>
-              </ProtectedRoute>
-            }
-          />
-          
-          {/* Comunidade */}
-          <Route
-            path="/community"
-            element={
-              <ProtectedRoute>
-                <div className="min-h-screen flex flex-col">
-                  <Header />
-                  <main className="flex-1">
-                    <Community />
-                  </main>
-                  <Footer />
-                </div>
-              </ProtectedRoute>
-            }
-          />
-          
-          {/* Marketplace */}
-          <Route
-            path="/marketplace"
-            element={
-              <ProtectedRoute>
-                <div className="min-h-screen flex flex-col">
-                  <Header />
-                  <main className="flex-1">
-                    <Marketplace />
-                  </main>
-                  <Footer />
-                </div>
-              </ProtectedRoute>
-            }
-          />
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/onboarding" element={<Onboarding />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/checklist" element={<Checklist />} />
+          <Route path="/chat" element={<ChatIA />} />
+          <Route path="/daily-log" element={<DailyLog />} />
+          <Route path="/lives" element={<Lives />} />
+          <Route path="/terms" element={<Terms />} />
+          {/* Fallback */}
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
-        <ToastContainer position="top-right" autoClose={3000} />
-      </BrowserRouter>
-    </AuthProvider>
+        <ToastContainer position="bottom-center" autoClose={3000} limit={1} />
+      </div>
+    </BrowserRouter>
   )
 }
 
