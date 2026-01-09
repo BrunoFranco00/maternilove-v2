@@ -11,6 +11,8 @@ export enum ErrorCode {
   AUTH_TOKEN_INVALID = 'AUTH_TOKEN_INVALID',
   AUTH_TOKEN_EXPIRED = 'AUTH_TOKEN_EXPIRED',
   AUTH_TOKEN_MISSING = 'AUTH_TOKEN_MISSING',
+  AUTH_SESSION_REVOKED = 'AUTH_SESSION_REVOKED',
+  AUTH_SESSION_EXPIRED = 'AUTH_SESSION_EXPIRED',
 
   // Validação
   VALIDATION_ERROR = 'VALIDATION_ERROR',
@@ -39,6 +41,8 @@ export const ErrorStatusMap: Record<ErrorCode, number> = {
   [ErrorCode.AUTH_TOKEN_INVALID]: 401,
   [ErrorCode.AUTH_TOKEN_EXPIRED]: 401,
   [ErrorCode.AUTH_TOKEN_MISSING]: 401,
+  [ErrorCode.AUTH_SESSION_REVOKED]: 401,
+  [ErrorCode.AUTH_SESSION_EXPIRED]: 401,
   [ErrorCode.VALIDATION_ERROR]: 400,
   [ErrorCode.NOT_FOUND]: 404,
   [ErrorCode.CONFLICT]: 409,
@@ -57,6 +61,8 @@ export const ErrorMessages: Record<ErrorCode, string> = {
   [ErrorCode.AUTH_TOKEN_INVALID]: 'Token inválido',
   [ErrorCode.AUTH_TOKEN_EXPIRED]: 'Token expirado',
   [ErrorCode.AUTH_TOKEN_MISSING]: 'Token não fornecido',
+  [ErrorCode.AUTH_SESSION_REVOKED]: 'Sessão revogada',
+  [ErrorCode.AUTH_SESSION_EXPIRED]: 'Sessão expirada',
   [ErrorCode.VALIDATION_ERROR]: 'Erro de validação',
   [ErrorCode.NOT_FOUND]: 'Recurso não encontrado',
   [ErrorCode.CONFLICT]: 'Conflito na operação',

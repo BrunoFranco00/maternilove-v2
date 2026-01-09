@@ -9,7 +9,7 @@ import { generalLimiter } from './middleware/rateLimiter.middleware.js';
 import { contextMiddleware } from './shared/middleware/context.middleware.js';
 import { AppError } from './shared/errors/AppError.js';
 import { ErrorCode } from './shared/errors/ErrorCatalog.js';
-import authRoutes from './routes/auth.routes.js';
+import authRoutes from './modules/auth/routes.js';
 import socialRoutes from './modules/social/routes.js';
 import communityRoutes from './modules/community/routes.js';
 import marketplaceRoutes from './modules/marketplace/routes.js';

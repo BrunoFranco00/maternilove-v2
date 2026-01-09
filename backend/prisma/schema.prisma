@@ -46,6 +46,7 @@ model User {
   notifications         Notification[]
   followers             UserFollower[]        @relation("following")
   following             UserFollower[]        @relation("follower")
+  authSessions          AuthSession[]
 
   @@index([email])
   @@index([role])
@@ -65,6 +66,27 @@ enum UserStatus {
   INACTIVE
   SUSPENDED
   DELETED
+}
+
+// ============================================================================
+// AUTENTICAÇÃO E SESSÕES
+// ============================================================================
+
+model AuthSession {
+  id          String   @id @default(uuid())
+  userId      String
+  tokenHash   String   @unique
+  createdAt   DateTime @default(now())
+  expiresAt   DateTime
+  revokedAt   DateTime?
+  userAgent   String?
+  ipAddress   String?
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([tokenHash])
+  @@index([expiresAt])
+  @@index([revokedAt])
 }
 
 model UserFollower {

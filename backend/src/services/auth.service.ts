@@ -1,6 +1,10 @@
+// ⚠️ ARQUIVO OBSOLETO - Usar modules/auth/services/auth.service.ts
+// Mantido apenas para compatibilidade durante migração
+// TODO: Remover após garantir que não há dependências
+
 import bcrypt from 'bcryptjs';
 import { prisma } from '../config/prisma.js';
-import { generateAccessToken, generateRefreshToken, type TokenPayload } from '../utils/jwt.js';
+import { generateAccessToken, generateRefreshToken, type TokenPayload, type RefreshTokenPayload } from '../utils/jwt.js';
 import { AuthenticationError, ValidationError } from '../utils/errors.js';
 import { registerSchema, loginSchema } from '../validators/auth.validator.js';
 
@@ -44,7 +48,9 @@ export const register = async (data: { email: string; password: string; name: st
   };
 
   const accessToken = generateAccessToken(payload);
-  const refreshToken = generateRefreshToken(payload);
+  // ⚠️ TEMPORÁRIO: Usar sessionId vazio para compatibilidade (arquivo obsoleto)
+  const refreshTokenPayload: RefreshTokenPayload = { ...payload, sessionId: 'legacy' };
+  const refreshToken = generateRefreshToken(refreshTokenPayload);
 
   return {
     user,
@@ -83,7 +89,9 @@ export const login = async (data: { email: string; password: string }) => {
   };
 
   const accessToken = generateAccessToken(payload);
-  const refreshToken = generateRefreshToken(payload);
+  // ⚠️ TEMPORÁRIO: Usar sessionId vazio para compatibilidade (arquivo obsoleto)
+  const refreshTokenPayload: RefreshTokenPayload = { ...payload, sessionId: 'legacy' };
+  const refreshToken = generateRefreshToken(refreshTokenPayload);
 
   return {
     user: {
