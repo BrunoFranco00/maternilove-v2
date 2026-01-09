@@ -7,6 +7,8 @@ import logger from './utils/logger.js';
 import { errorHandler } from './middleware/errorHandler.middleware.js';
 import { generalLimiter } from './middleware/rateLimiter.middleware.js';
 import { contextMiddleware } from './shared/middleware/context.middleware.js';
+import { AppError } from './shared/errors/AppError.js';
+import { ErrorCode } from './shared/errors/ErrorCatalog.js';
 import authRoutes from './routes/auth.routes.js';
 import socialRoutes from './modules/social/routes.js';
 import communityRoutes from './modules/community/routes.js';
@@ -288,21 +290,18 @@ app.get('/api/users', (req: Request, res: Response) => {
 });
 
 // ============================================================================
-// ERROR HANDLING
+// 404 HANDLER (deve vir ANTES do errorHandler)
+// ============================================================================
+// Rotas não encontradas devem lançar AppError para passar pelo errorHandler
+app.use((req: Request, res: Response, next: NextFunction) => {
+  next(new AppError(ErrorCode.NOT_FOUND, 'Recurso não encontrado'));
+});
+
+// ============================================================================
+// ERROR HANDLING (deve ser o ÚLTIMO middleware)
 // ============================================================================
 
 app.use(errorHandler);
-
-// ============================================================================
-// 404 HANDLER
-// ============================================================================
-
-app.use((req: Request, res: Response) => {
-  res.status(404).json({ 
-    success: false,
-    error: { message: 'Not Found' } 
-  });
-});
 
 // ============================================================================
 // START SERVER
