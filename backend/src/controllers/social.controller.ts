@@ -1,12 +1,11 @@
 import { Request, Response } from 'express';
 import { prisma } from '../config/prisma.js';
 import logger from '../utils/logger.js';
-import { AuthRequest } from '../middleware/auth.middleware.js';
 
 // GET /api/social/feed - Feed de posts
 export const getFeed = async (req: Request, res: Response) => {
   try {
-    const userId = (req as unknown as AuthRequest).user?.id;
+    const userId = req.user?.id;
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
     const skip = (page - 1) * limit;
@@ -73,7 +72,7 @@ export const getFeed = async (req: Request, res: Response) => {
 };
 
 // POST /api/social/posts - Criar post
-export const createPost = async (req: AuthRequest, res: Response) => {
+export const createPost = async (req: Request, res: Response) => {
   try {
     const userId = req.user?.id;
     if (!userId) {
@@ -123,7 +122,7 @@ export const createPost = async (req: AuthRequest, res: Response) => {
 };
 
 // POST /api/social/posts/:id/like - Curtir/descurtir post
-export const toggleLike = async (req: AuthRequest, res: Response) => {
+export const toggleLike = async (req: Request, res: Response) => {
   try {
     const userId = req.user?.id;
     if (!userId) {
@@ -192,7 +191,7 @@ export const toggleLike = async (req: AuthRequest, res: Response) => {
 };
 
 // POST /api/social/posts/:id/comments - Comentar post
-export const createComment = async (req: AuthRequest, res: Response) => {
+export const createComment = async (req: Request, res: Response) => {
   try {
     const userId = req.user?.id;
     if (!userId) {

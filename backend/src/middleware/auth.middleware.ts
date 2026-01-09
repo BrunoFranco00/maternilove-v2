@@ -1,21 +1,19 @@
 import { Request, Response, NextFunction } from 'express';
 import { verifyAccessToken } from '../utils/jwt.js';
-import { AuthenticationError } from '../utils/errors.js';
+import { AppError } from '../shared/errors/AppError.js';
+import { ErrorCode } from '../shared/errors/ErrorCatalog.js';
 
-export interface AuthRequest extends Request {
-  user?: {
-    id: string;
-    email?: string;
-    role?: string;
-  };
-}
-
-export const authenticate = (req: AuthRequest, res: Response, next: NextFunction) => {
+/**
+ * Middleware de autenticação JWT
+ * 
+ * Verifica token Bearer e injeta req.user com dados do token
+ */
+export const authenticate = (req: Request, res: Response, next: NextFunction): void => {
   try {
     const authHeader = req.headers.authorization;
     
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      throw new AuthenticationError('Token not provided');
+      throw new AppError(ErrorCode.AUTH_TOKEN_MISSING);
     }
 
     const token = authHeader.substring(7);
@@ -29,18 +27,28 @@ export const authenticate = (req: AuthRequest, res: Response, next: NextFunction
     };
     next();
   } catch (error) {
-    next(new AuthenticationError('Invalid or expired token'));
+    // Se erro é AppError, passa direto
+    if (error instanceof AppError) {
+      return next(error);
+    }
+    // Senão, mapeia para token inválido/expirado
+    next(new AppError(ErrorCode.AUTH_TOKEN_INVALID));
   }
 };
 
+/**
+ * Middleware de autorização por role
+ * 
+ * Verifica se usuário tem uma das roles especificadas
+ */
 export const authorize = (...roles: string[]) => {
-  return (req: AuthRequest, res: Response, next: NextFunction) => {
+  return (req: Request, res: Response, next: NextFunction): void => {
     if (!req.user) {
-      return next(new AuthenticationError());
+      return next(new AppError(ErrorCode.AUTH_UNAUTHORIZED));
     }
 
     if (!req.user.role || !roles.includes(req.user.role)) {
-      return next(new Error('Insufficient permissions'));
+      return next(new AppError(ErrorCode.AUTH_FORBIDDEN));
     }
 
     next();

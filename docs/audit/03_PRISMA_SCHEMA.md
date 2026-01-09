@@ -1,0 +1,620 @@
+# PRISMA SCHEMA - MATERNI LOVE V2
+
+**Data:** 2025-01-03  
+**Objetivo:** Documentação completa do schema Prisma e configuração do banco
+
+---
+
+## CONTEÚDO INTEGRAL DO SCHEMA
+
+```prisma
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// AUTENTICAÇÃO E USUÁRIOS
+// ============================================================================
+
+model User {
+  id                    String                @id @default(cuid())
+  email                 String                @unique
+  password              String
+  name                  String
+  avatar                String?
+  bio                   String?
+  role                  UserRole              @default(USER)
+  status                UserStatus            @default(ACTIVE)
+  emailVerified         Boolean               @default(false)
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+  deletedAt             DateTime?
+
+  // Relacionamentos
+  journey               Journey?
+  moments               Moment[]
+  socialPosts           SocialPost[]
+  socialLikes           SocialLike[]
+  socialComments        SocialComment[]
+  achievements          UserAchievement[]
+  leaderboardEntries    LeaderboardEntry[]
+  communityPosts        CommunityPost[]
+  communityComments     CommunityComment[]
+  directMessages        DirectMessage[]
+  professional          Professional?
+  company               Company?
+  orders                Order[]
+  reviews               Review[]
+  notifications         Notification[]
+  followers             UserFollower[]        @relation("following")
+  following             UserFollower[]        @relation("follower")
+
+  @@index([email])
+  @@index([role])
+  @@index([status])
+}
+
+enum UserRole {
+  USER
+  PROFESSIONAL
+  COMPANY
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  DELETED
+}
+
+model UserFollower {
+  id          String   @id @default(cuid())
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+
+  follower    User     @relation("follower", fields: [followerId], references: [id], onDelete: Cascade)
+  following   User     @relation("following", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
+}
+
+// ============================================================================
+// JORNADA E MOMENTOS
+// ============================================================================
+
+model Journey {
+  id            String          @id @default(cuid())
+  userId        String          @unique
+  type          JourneyType
+  startDate     DateTime
+  expectedDate  DateTime?
+  currentStage  Int             @default(1)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stages        JourneyStage[]
+  moments       Moment[]
+  suggestions   SmartSuggestion[]
+
+  @@index([userId])
+}
+
+enum JourneyType {
+  PREGNANCY
+  POSTPARTUM
+  BABY_0_3M
+  BABY_3_6M
+  BABY_6_12M
+  BABY_1_2Y
+  BABY_2_3Y
+  BABY_3_5Y
+}
+
+model JourneyStage {
+  id          String    @id @default(cuid())
+  journeyId   String
+  stage       Int
+  title       String
+  description String?
+  startDate   DateTime
+  endDate     DateTime?
+  completed   Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+
+  journey     Journey   @relation(fields: [journeyId], references: [id], onDelete: Cascade)
+
+  @@index([journeyId])
+}
+
+model Moment {
+  id          String          @id @default(cuid())
+  userId      String
+  journeyId   String
+  title       String
+  description String?
+  images      String[]        @default([])
+  videos      String[]        @default([])
+  mood        String?
+  weight      Float?
+  notes       String?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  journey     Journey         @relation(fields: [journeyId], references: [id], onDelete: Cascade)
+  comments    MomentComment[]
+
+  @@index([userId])
+  @@index([journeyId])
+}
+
+model MomentComment {
+  id        String   @id @default(cuid())
+  momentId  String
+  text      String
+  createdAt DateTime @default(now())
+
+  moment    Moment   @relation(fields: [momentId], references: [id], onDelete: Cascade)
+
+  @@index([momentId])
+}
+
+// ============================================================================
+// SUGESTÕES INTELIGENTES
+// ============================================================================
+
+model SmartSuggestion {
+  id          String    @id @default(cuid())
+  journeyId   String
+  title       String
+  description String
+  category    String
+  priority    Int       @default(0)
+  createdAt   DateTime  @default(now())
+
+  journey     Journey   @relation(fields: [journeyId], references: [id], onDelete: Cascade)
+
+  @@index([journeyId])
+}
+
+// ============================================================================
+// REDE SOCIAL
+// ============================================================================
+
+model SocialPost {
+  id          String          @id @default(cuid())
+  userId      String
+  content     String
+  images      String[]        @default([])
+  likes       Int             @default(0)
+  views       Int             @default(0)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  likes_rel   SocialLike[]
+  comments    SocialComment[]
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model SocialLike {
+  id        String   @id @default(cuid())
+  postId    String
+  userId    String
+  createdAt DateTime @default(now())
+
+  post      SocialPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@index([postId])
+  @@index([userId])
+}
+
+model SocialComment {
+  id        String   @id @default(cuid())
+  postId    String
+  userId    String
+  text      String
+  createdAt DateTime @default(now())
+
+  post      SocialPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([postId])
+  @@index([userId])
+}
+
+// ============================================================================
+// GAMIFICAÇÃO
+// ============================================================================
+
+model Achievement {
+  id          String @id @default(cuid())
+  name        String
+  description String
+  icon        String
+  points      Int
+
+  users       UserAchievement[]
+
+  @@unique([name])
+}
+
+model UserAchievement {
+  id            String   @id @default(cuid())
+  userId        String
+  achievementId String
+  unlockedAt    DateTime @default(now())
+
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, achievementId])
+  @@index([userId])
+}
+
+model LeaderboardEntry {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  points    Int      @default(0)
+  rank      Int
+  updatedAt DateTime @updatedAt
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([rank])
+  @@index([points])
+}
+
+// ============================================================================
+// COMUNIDADE
+// ============================================================================
+
+model CommunityCategory {
+  id          String @id @default(cuid())
+  name        String @unique
+  description String?
+  icon        String?
+
+  posts       CommunityPost[]
+}
+
+model CommunityPost {
+  id          String          @id @default(cuid())
+  userId      String
+  categoryId  String
+  title       String
+  content     String
+  views       Int             @default(0)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category    CommunityCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  comments    CommunityComment[]
+
+  @@index([userId])
+  @@index([categoryId])
+  @@index([createdAt])
+}
+
+model CommunityComment {
+  id        String   @id @default(cuid())
+  postId    String
+  userId    String
+  text      String
+  createdAt DateTime @default(now())
+
+  post      CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([postId])
+  @@index([userId])
+}
+
+// ============================================================================
+// MENSAGENS DIRETAS
+// ============================================================================
+
+model DirectMessage {
+  id        String   @id @default(cuid())
+  senderId  String
+  text      String
+  createdAt DateTime @default(now())
+
+  sender    User     @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([senderId])
+}
+
+// ============================================================================
+// PROFISSIONAIS
+// ============================================================================
+
+model Professional {
+  id              String @id @default(cuid())
+  userId          String @unique
+  specialties     String[]
+  bio             String?
+  verified        Boolean @default(false)
+  rating          Float @default(0)
+  reviewCount     Int @default(0)
+
+  user            User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  appointments    Appointment[]
+  reviews         Review[]
+
+  @@index([verified])
+  @@index([rating])
+}
+
+model Appointment {
+  id              String @id @default(cuid())
+  professionalId  String
+  date            DateTime
+  duration        Int
+  status          String @default("pending")
+  createdAt       DateTime @default(now())
+
+  professional    Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+
+  @@index([professionalId])
+  @@index([date])
+}
+
+// ============================================================================
+// EMPRESAS
+// ============================================================================
+
+model Company {
+  id          String @id @default(cuid())
+  userId      String @unique
+  name        String
+  description String?
+  logo        String?
+  verified    Boolean @default(false)
+
+  user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  products    Product[]
+
+  @@index([verified])
+}
+
+// ============================================================================
+// MARKETPLACE
+// ============================================================================
+
+model Product {
+  id          String @id @default(cuid())
+  companyId   String
+  name        String
+  description String
+  price       Float
+  image       String?
+  stock       Int @default(0)
+  createdAt   DateTime @default(now())
+
+  company     Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  orderItems  OrderItem[]
+  reviews     Review[]
+
+  @@index([companyId])
+}
+
+model Order {
+  id          String @id @default(cuid())
+  userId      String
+  total       Float
+  status      String @default("pending")
+  createdAt   DateTime @default(now())
+
+  user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items       OrderItem[]
+
+  @@index([userId])
+  @@index([status])
+}
+
+model OrderItem {
+  id        String @id @default(cuid())
+  orderId   String
+  productId String
+  quantity  Int
+  price     Float
+
+  order     Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@index([productId])
+}
+
+model Review {
+  id              String @id @default(cuid())
+  userId          String
+  productId       String?
+  professionalId  String?
+  rating          Int
+  text            String?
+  createdAt       DateTime @default(now())
+
+  user            User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product         Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
+  professional    Professional? @relation(fields: [professionalId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([productId])
+}
+
+// ============================================================================
+// BLOG
+// ============================================================================
+
+model BlogPost {
+  id          String @id @default(cuid())
+  title       String
+  slug        String @unique
+  content     String
+  excerpt     String?
+  image       String?
+  published   Boolean @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([published])
+  @@index([createdAt])
+}
+
+// ============================================================================
+// ASSINATURAS
+// ============================================================================
+
+model Subscription {
+  id          String @id @default(cuid())
+  name        String
+  price       Float
+  features    String[]
+  createdAt   DateTime @default(now())
+}
+
+// ============================================================================
+// NOTIFICAÇÕES
+// ============================================================================
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([read])
+}
+
+// ============================================================================
+// ADMIN LOGS
+// ============================================================================
+
+model AdminLog {
+  id        String   @id @default(cuid())
+  action    String
+  entity    String
+  entityId  String
+  changes   String?
+  createdAt DateTime @default(now())
+
+  @@index([action])
+  @@index([entity])
+  @@index([createdAt])
+}
+```
+
+---
+
+## MIGRATIONS
+
+### Lista de Migrations
+
+#### `20260103225947_init`
+- **Data**: 2025-01-03 22:59:47
+- **Arquivo**: `backend/prisma/migrations/20260103225947_init/migration.sql`
+- **Descrição**: Migration inicial que cria todas as tabelas do schema
+- **Status**: Aplicada
+
+### Arquivo de Lock
+- **Arquivo**: `backend/prisma/migrations/migration_lock.toml`
+- **Provider**: `postgresql`
+
+---
+
+## CONFIGURAÇÃO DO PRISMA CLIENT
+
+### Arquivo de Criação
+- **Arquivo**: `backend/src/config/prisma.ts`
+
+### Implementação
+
+```typescript
+import { PrismaClient } from '@prisma/client';
+
+const globalForPrisma = global as unknown as { prisma?: PrismaClient };
+
+export const prisma =
+  globalForPrisma.prisma ??
+  new PrismaClient({
+    log:
+      process.env.NODE_ENV === 'development'
+        ? ['query', 'warn', 'error']
+        : ['error'],
+  });
+
+if (process.env.NODE_ENV !== 'production') {
+  globalForPrisma.prisma = prisma;
+}
+
+export default prisma;
+```
+
+### Características
+
+1. **Singleton Pattern**: Usa variável global para evitar múltiplas instâncias em desenvolvimento
+2. **Logging Condicional**: 
+   - Development: `['query', 'warn', 'error']`
+   - Production: `['error']`
+3. **Pooling**: Pooling padrão do Prisma Client (não há configuração explícita)
+4. **Accelerate**: **NÃO configurado** (não há `@prisma/extension-prisma-accelerate`)
+
+### Nota sobre Pooling
+
+O Prisma Client gerencia o pool de conexões automaticamente. Configurações customizadas de pooling (como `connection_limit`) não foram encontradas no schema.
+
+---
+
+## ESTATÍSTICAS DO SCHEMA
+
+### Modelos
+- **Total**: 27 modelos
+
+### Enums
+- **Total**: 3 enums
+  - `UserRole` (5 valores)
+  - `UserStatus` (4 valores)
+  - `JourneyType` (8 valores)
+
+### Relacionamentos
+- Relacionamentos 1:1, 1:N e N:N implementados
+- Cascades configurados (`onDelete: Cascade` ou `onDelete: SetNull`)
+
+### Índices
+- Índices em campos frequentemente consultados (userId, createdAt, status, etc)
+- Índices únicos onde necessário (email, slug, etc)
+
+---
+
+## OBSERVAÇÕES
+
+1. **Modelos não utilizados**: Vários modelos não têm endpoints correspondentes ainda (Journey, Moment, Achievement, BlogPost, Subscription, etc)
+2. **Soft Delete**: Campo `deletedAt` existe no User mas não há lógica de soft delete implementada
+3. **Auditoria**: Modelo `AdminLog` existe mas não há endpoints para consultá-lo
+4. **Review genérico**: Modelo `Review` pode ser tanto de produto quanto de profissional (campos opcionais `productId` e `professionalId`)

@@ -6,6 +6,7 @@ import { prisma } from './config/prisma.js';
 import logger from './utils/logger.js';
 import { errorHandler } from './middleware/errorHandler.middleware.js';
 import { generalLimiter } from './middleware/rateLimiter.middleware.js';
+import { contextMiddleware } from './shared/middleware/context.middleware.js';
 import authRoutes from './routes/auth.routes.js';
 import socialRoutes from './routes/social.routes.js';
 import communityRoutes from './routes/community.routes.js';
@@ -161,6 +162,11 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // ============================================================================
+// CONTEXTO GLOBAL (requestId, locale, timeZone)
+// ============================================================================
+app.use(contextMiddleware);
+
+// ============================================================================
 // ROTAS
 // ============================================================================
 
@@ -232,35 +238,51 @@ app.get('/health', async (req: Request, res: Response) => {
   }
 });
 
-// API Root
+// ============================================================================
+// API ROOT
+// ============================================================================
 app.get('/api', (req: Request, res: Response) => {
   res.json({ 
-    message: 'Materni Love API v1',
+    message: 'Materni Love API',
     version: '1.0.0',
+    apiVersion: 'v1',
+    basePath: '/api/v1',
+    deprecated: '/api/* (use /api/v1/*)',
     endpoints: {
       health: '/health',
-      auth: '/api/auth',
-      social: '/api/social',
-      community: '/api/community',
-      marketplace: '/api/marketplace',
-      users: '/api/users',
-    }
+      auth: '/api/v1/auth',
+      social: '/api/v1/social',
+      community: '/api/v1/community',
+      marketplace: '/api/v1/marketplace',
+      users: '/api/v1/users',
+    },
+    note: 'Rotas em /api/* são mantidas por compatibilidade, mas use /api/v1/*'
   });
 });
 
-// Rotas de autenticação
+// ============================================================================
+// ROTAS VERSIONADAS (/api/v1/*) - RECOMENDADO
+// ============================================================================
+app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/social', socialRoutes);
+app.use('/api/v1/community', communityRoutes);
+app.use('/api/v1/marketplace', marketplaceRoutes);
+
+// Placeholder Route versionada
+app.get('/api/v1/users', (req: Request, res: Response) => {
+  res.json({ message: 'Users endpoint' });
+});
+
+// ============================================================================
+// ROTAS LEGACY (/api/*) - ALIAS TEMPORÁRIO (COMPATIBILIDADE)
+// ============================================================================
+// Montar as mesmas rotas em /api/* para manter compatibilidade com frontend existente
 app.use('/api/auth', authRoutes);
-
-// Rotas de rede social
 app.use('/api/social', socialRoutes);
-
-// Rotas de comunidade
 app.use('/api/community', communityRoutes);
-
-// Rotas de marketplace
 app.use('/api/marketplace', marketplaceRoutes);
 
-// Placeholder Routes
+// Placeholder Route legacy
 app.get('/api/users', (req: Request, res: Response) => {
   res.json({ message: 'Users endpoint' });
 });

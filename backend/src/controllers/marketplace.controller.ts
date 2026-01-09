@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 import { prisma } from '../config/prisma.js';
 import logger from '../utils/logger.js';
-import { AuthRequest } from '../middleware/auth.middleware.js';
 
 // GET /api/marketplace/products - Listar produtos
 export const getProducts = async (req: Request, res: Response) => {
@@ -148,7 +147,7 @@ export const getProduct = async (req: Request, res: Response) => {
 };
 
 // POST /api/marketplace/products/:id/reviews - Criar review
-export const createReview = async (req: AuthRequest, res: Response) => {
+export const createReview = async (req: Request, res: Response) => {
   try {
     const userId = req.user?.id;
     if (!userId) {
@@ -200,7 +199,7 @@ export const createReview = async (req: AuthRequest, res: Response) => {
 };
 
 // GET /api/marketplace/orders - Listar pedidos do usuário
-export const getOrders = async (req: AuthRequest, res: Response) => {
+export const getOrders = async (req: Request, res: Response) => {
   try {
     const userId = req.user?.id;
     if (!userId) {
@@ -243,7 +242,7 @@ export const getOrders = async (req: AuthRequest, res: Response) => {
 };
 
 // POST /api/marketplace/orders - Criar pedido
-export const createOrder = async (req: AuthRequest, res: Response) => {
+export const createOrder = async (req: Request, res: Response) => {
   try {
     const userId = req.user?.id;
     if (!userId) {

@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 import { prisma } from '../config/prisma.js';
 import logger from '../utils/logger.js';
-import { AuthRequest } from '../middleware/auth.middleware.js';
 
 // GET /api/community/categories - Listar categorias
 export const getCategories = async (req: Request, res: Response) => {
@@ -101,7 +100,7 @@ export const getPosts = async (req: Request, res: Response) => {
 };
 
 // POST /api/community/posts - Criar post
-export const createPost = async (req: AuthRequest, res: Response) => {
+export const createPost = async (req: Request, res: Response) => {
   try {
     const userId = req.user?.id;
     if (!userId) {
@@ -227,7 +226,7 @@ export const getPost = async (req: Request, res: Response) => {
 };
 
 // POST /api/community/posts/:id/comments - Comentar post
-export const createComment = async (req: AuthRequest, res: Response) => {
+export const createComment = async (req: Request, res: Response) => {
   try {
     const userId = req.user?.id;
     if (!userId) {
