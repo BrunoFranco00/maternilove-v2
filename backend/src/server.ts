@@ -8,9 +8,9 @@ import { errorHandler } from './middleware/errorHandler.middleware.js';
 import { generalLimiter } from './middleware/rateLimiter.middleware.js';
 import { contextMiddleware } from './shared/middleware/context.middleware.js';
 import authRoutes from './routes/auth.routes.js';
-import socialRoutes from './routes/social.routes.js';
-import communityRoutes from './routes/community.routes.js';
-import marketplaceRoutes from './routes/marketplace.routes.js';
+import socialRoutes from './modules/social/routes.js';
+import communityRoutes from './modules/community/routes.js';
+import marketplaceRoutes from './modules/marketplace/routes.js';
 
 dotenv.config();
 
