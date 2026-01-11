@@ -21,7 +21,7 @@ model User {
   name                  String
   avatar                String?
   bio                   String?
-  role                  UserRole              @default(MOTHER)
+  role                  UserRole              @default(USER)
   status                UserStatus            @default(ACTIVE)
   emailVerified         Boolean               @default(false)
   createdAt             DateTime              @default(now())
