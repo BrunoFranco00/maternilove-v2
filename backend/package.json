@@ -22,7 +22,8 @@
     "prisma:migrate:deploy": "prisma migrate deploy",
     "prisma:studio": "prisma studio",
     "prisma:seed": "tsx prisma/seed.ts",
-    "seed:admin": "tsx prisma/seed.ts"
+    "seed:admin": "tsx prisma/seed.ts",
+    "resolve-migration": "tsx scripts/resolveMigration.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.7.1",
