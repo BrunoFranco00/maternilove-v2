@@ -13,6 +13,10 @@ import authRoutes from './modules/auth/routes.js';
 import socialRoutes from './modules/social/routes.js';
 import communityRoutes from './modules/community/routes.js';
 import marketplaceRoutes from './modules/marketplace/routes.js';
+import journeyRoutes from './modules/journey/routes.js';
+import { authenticate } from './middleware/auth.middleware.js';
+import { authorize } from './shared/middleware/authorize.middleware.js';
+import { asyncHandler } from './shared/utils/asyncHandler.js';
 
 dotenv.config();
 
@@ -256,6 +260,7 @@ app.get('/api', (req: Request, res: Response) => {
       social: '/api/v1/social',
       community: '/api/v1/community',
       marketplace: '/api/v1/marketplace',
+      journey: '/api/v1/journey',
       users: '/api/v1/users',
     },
     note: 'Rotas em /api/* são mantidas por compatibilidade, mas use /api/v1/*'
@@ -269,11 +274,25 @@ app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/social', socialRoutes);
 app.use('/api/v1/community', communityRoutes);
 app.use('/api/v1/marketplace', marketplaceRoutes);
+app.use('/api/v1/journey', journeyRoutes);
 
 // Placeholder Route versionada
 app.get('/api/v1/users', (req: Request, res: Response) => {
   res.json({ message: 'Users endpoint' });
 });
+
+// Rota de exemplo protegida com RBAC (apenas ADMIN)
+app.get('/api/v1/admin/example', authenticate, authorize('ADMIN'), asyncHandler(async (req: Request, res: Response) => {
+  res.json({ 
+    success: true,
+    message: 'Acesso autorizado: você é ADMIN',
+    user: {
+      id: req.user?.id,
+      role: req.user?.role,
+    },
+    requestId: req.context?.requestId,
+  });
+}));
 
 // ============================================================================
 // ROTAS LEGACY (/api/*) - ALIAS TEMPORÁRIO (COMPATIBILIDADE)
@@ -283,6 +302,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/social', socialRoutes);
 app.use('/api/community', communityRoutes);
 app.use('/api/marketplace', marketplaceRoutes);
+app.use('/api/journey', journeyRoutes);
 
 // Placeholder Route legacy
 app.get('/api/users', (req: Request, res: Response) => {
