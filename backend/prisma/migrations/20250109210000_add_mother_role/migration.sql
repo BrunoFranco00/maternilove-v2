@@ -1,5 +1,6 @@
 -- AlterEnum
--- Adiciona o valor MOTHER ao enum UserRole
--- NOTA: Alterar default precisa ser feito em migration separada
--- pois PostgreSQL não permite usar novo valor de enum na mesma transação
+-- Migration A: Adiciona o valor MOTHER ao enum UserRole
+-- IMPORTANTE: Esta migration APENAS adiciona o valor ao enum.
+-- NÃO pode conter ALTER TABLE, UPDATE, ou qualquer uso do novo valor.
+-- PostgreSQL requer que novos valores de enum sejam commitados antes de serem usados.
 ALTER TYPE "UserRole" ADD VALUE IF NOT EXISTS 'MOTHER';
