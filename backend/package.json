@@ -8,7 +8,7 @@
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
     "postinstall": "prisma generate",
-    "prestart": "tsx scripts/resolveFailedMigration.ts && prisma migrate deploy",
+    "prestart": "node dist/scripts/resolveFailedMigration.js || true && prisma migrate deploy",
     "start": "node dist/server.js",
     "test": "jest",
     "test:watch": "jest --watch",
