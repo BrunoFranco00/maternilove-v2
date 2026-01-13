@@ -1,7 +1,31 @@
+'use client';
+
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+import { useAuth } from '@/hooks/useAuth';
 import { t } from '@/lib/i18n';
+import { LoadingState } from '@/components/feedback/LoadingState';
 
 export default function HomePage() {
+  const router = useRouter();
+  const { status } = useAuth();
+
+  // Se autenticado, redirecionar para dashboard
+  useEffect(() => {
+    if (status === 'authenticated') {
+      router.push('/dashboard');
+    }
+  }, [status, router]);
+
+  if (status === 'unknown') {
+    return <LoadingState />;
+  }
+
+  if (status === 'authenticated') {
+    return null; // Redirecionando
+  }
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-8">
       <div className="max-w-2xl text-center">

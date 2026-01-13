@@ -1,10 +1,14 @@
+'use client';
+
 /**
  * Layout privado (PrivateShell)
  * Estrutura mínima: header simples + container
- * SEM sidebar complexa, SEM RBAC, SEM lógica
+ * Com botão de logout
  */
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/hooks/useAuth';
 import { t } from '@/lib/i18n';
 
 export default function PrivateLayout({
@@ -12,6 +16,14 @@ export default function PrivateLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const router = useRouter();
+  const { logout, user } = useAuth();
+
+  const handleLogout = async () => {
+    await logout();
+    router.push('/login');
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       {/* Header simples */}
@@ -24,12 +36,23 @@ export default function PrivateLayout({
               </Link>
             </div>
             <nav className="flex items-center space-x-4">
+              {user && (
+                <span className="text-sm text-gray-600">
+                  {user.name}
+                </span>
+              )}
               <Link
                 href="/dashboard"
                 className="text-gray-700 hover:text-gray-900"
               >
                 {t('nav.dashboard')}
               </Link>
+              <button
+                onClick={handleLogout}
+                className="px-3 py-1 text-sm text-red-600 hover:text-red-700 border border-red-300 rounded-md hover:bg-red-50 transition-colors"
+              >
+                Sair
+              </button>
             </nav>
           </div>
         </div>
