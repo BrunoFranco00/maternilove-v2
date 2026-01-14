@@ -128,24 +128,33 @@ export function AuthProvider({ children }: AuthProviderProps) {
    * Carregar estado inicial do localStorage
    */
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined') {
+      setStatus('unauthenticated');
+      return;
+    }
 
-    const storedUser = localStorage.getItem('user');
-    const storedAccessToken = localStorage.getItem('accessToken');
-    const storedRefreshToken = localStorage.getItem('refreshToken');
+    try {
+      const storedUser = localStorage.getItem('user');
+      const storedAccessToken = localStorage.getItem('accessToken');
+      const storedRefreshToken = localStorage.getItem('refreshToken');
 
-    if (storedUser && storedAccessToken && storedRefreshToken) {
-      try {
-        const userData = JSON.parse(storedUser) as User;
-        setUser(userData);
-        setStatus('authenticated');
-      } catch {
-        // Dados inválidos, limpar
-        clearTokens();
-        clearUser();
+      if (storedUser && storedAccessToken && storedRefreshToken) {
+        try {
+          const userData = JSON.parse(storedUser) as User;
+          setUser(userData);
+          setStatus('authenticated');
+        } catch {
+          // Dados inválidos, limpar
+          clearTokens();
+          clearUser();
+          setStatus('unauthenticated');
+        }
+      } else {
         setStatus('unauthenticated');
       }
-    } else {
+    } catch (error) {
+      // Erro ao acessar localStorage, considerar não autenticado
+      console.error('Error accessing localStorage:', error);
       setStatus('unauthenticated');
     }
   }, [clearTokens, clearUser]);
@@ -154,7 +163,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
    * Configurar callbacks do httpClient para refresh token
    */
   useEffect(() => {
-    httpClient.setRefreshTokenCallbacks(refresh, handleLogout);
+    if (typeof window === 'undefined') return;
+    
+    try {
+      httpClient.setRefreshTokenCallbacks(refresh, handleLogout);
+    } catch (error) {
+      console.error('Error setting refresh token callbacks:', error);
+    }
   }, [httpClient, refresh, handleLogout]);
 
   /**
