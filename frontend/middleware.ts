@@ -2,33 +2,14 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 /**
- * Middleware para proteger rotas privadas
- * Redireciona para /login se não autenticado
- * 
- * Nota: No middleware do Next.js, não temos acesso ao localStorage.
- * A verificação de autenticação será feita no lado do cliente.
- * Este middleware apenas redireciona baseado em cookies.
+ * Middleware simplificado
+ * Por enquanto, apenas permite todas as rotas
+ * A proteção será feita no cliente via AuthProvider
  */
 
 export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-
-  // Rotas públicas (não proteger)
-  const publicRoutes = ['/login', '/register', '/'];
-  const isPublicRoute = publicRoutes.includes(pathname);
-
-  // Verificar se há access token em cookie (fallback)
-  // A verificação principal será feita no cliente via AuthProvider
-  const accessToken = request.cookies.get('accessToken')?.value;
-
-  // Se está tentando acessar rota privada sem token em cookie, redirecionar para login
-  // (A verificação completa será feita no cliente)
-  if (!isPublicRoute && !accessToken && pathname.startsWith('/dashboard')) {
-    const loginUrl = new URL('/login', request.url);
-    loginUrl.searchParams.set('redirect', pathname);
-    return NextResponse.redirect(loginUrl);
-  }
-
+  // Por enquanto, apenas passar todas as requisições
+  // A proteção de rotas será feita no cliente
   return NextResponse.next();
 }
 
