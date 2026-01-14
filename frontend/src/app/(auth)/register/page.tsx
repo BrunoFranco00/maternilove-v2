@@ -1,20 +1,23 @@
 'use client';
 
 /**
- * Tela de Register - LOCK FRONTEND 2A: AUTH REAL ISOLADO
- * Integração real com backend apenas para register
+ * Tela de Register - LOCK FRONTEND FINAL
+ * Integração real com backend
  */
 
-import { useState, FormEvent } from 'react';
+import { useState, FormEvent, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/providers/ToastProvider';
 import { ErrorState } from '@/components/feedback/ErrorState';
 import { LoadingState } from '@/components/feedback/LoadingState';
 import { t } from '@/lib/i18n';
-import { register } from '@/services/authService';
 import type { RegisterRequest } from '@/types/auth';
 
 export default function RegisterPage() {
+  const router = useRouter();
+  const { register, status } = useAuth();
   const { showToast } = useToast();
   
   const [name, setName] = useState('');
@@ -23,12 +26,17 @@ export default function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
+
+  // Redirecionar se já autenticado
+  useEffect(() => {
+    if (status === 'authenticated') {
+      router.push('/dashboard');
+    }
+  }, [status, router]);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
-    setSuccess(false);
 
     // Validação básica
     if (password !== confirmPassword) {
@@ -45,14 +53,9 @@ export default function RegisterPage() {
 
     try {
       const payload: RegisterRequest = { name, email, password };
-      const result = await register(payload);
-      
-      // Sucesso: exibir feedback visual
-      setSuccess(true);
+      await register(payload);
       showToast('Conta criada com sucesso!', 'success');
-      
-      // LOCK FRONTEND 2A: NÃO redirecionar automaticamente
-      // NÃO alterar estado global de sessão ainda
+      router.push('/dashboard');
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erro ao criar conta';
       setError(errorMessage);
@@ -62,6 +65,14 @@ export default function RegisterPage() {
       setIsLoading(false);
     }
   };
+
+  if (status === 'unknown') {
+    return <LoadingState />;
+  }
+
+  if (status === 'authenticated') {
+    return null; // Redirecionando
+  }
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-8 bg-gray-50">
@@ -73,14 +84,6 @@ export default function RegisterPage() {
           <p className="text-gray-600 mb-8 text-center">
             {t('page.register.description')}
           </p>
-
-          {success && (
-            <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-md">
-              <p className="text-sm text-green-800">
-                Conta criada com sucesso! (LOCK FRONTEND 2A: Sem redirect automático)
-              </p>
-            </div>
-          )}
 
           {error && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">

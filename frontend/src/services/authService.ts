@@ -1,7 +1,6 @@
 /**
- * Serviço de Autenticação - LOCK FRONTEND 2A
- * Funções explícitas para Register e Login
- * NÃO contém lógica de sessão, apenas chamada + retorno
+ * Serviço de Autenticação - LOCK FRONTEND FINAL
+ * Funções explícitas para Register, Login, Refresh e Logout
  */
 
 import { getHttpClient } from './httpClient';
@@ -10,6 +9,9 @@ import type {
   RegisterResponse,
   LoginRequest,
   LoginResponse,
+  RefreshRequest,
+  RefreshResponse,
+  LogoutRequest,
 } from '@/types/auth';
 
 /**
@@ -52,4 +54,43 @@ export async function login(
   }
 
   return result.data;
+}
+
+/**
+ * Refresh token
+ */
+export async function refresh(
+  payload: RefreshRequest
+): Promise<RefreshResponse> {
+  const httpClient = getHttpClient();
+  const result = await httpClient.post<RefreshResponse, RefreshRequest>(
+    '/auth/refresh',
+    payload
+  );
+
+  if (!result.ok) {
+    const errorMessage = result.error.message || 'Erro ao renovar sessão';
+    console.error('❌ Erro no refresh:', result.error);
+    throw new Error(errorMessage);
+  }
+
+  return result.data;
+}
+
+/**
+ * Logout
+ */
+export async function logout(
+  payload: LogoutRequest
+): Promise<void> {
+  const httpClient = getHttpClient();
+  const result = await httpClient.post<{ success: boolean }, LogoutRequest>(
+    '/auth/logout',
+    payload
+  );
+
+  if (!result.ok) {
+    // Logout é idempotente, apenas logar erro
+    console.error('❌ Erro no logout:', result.error);
+  }
 }

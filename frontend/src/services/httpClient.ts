@@ -1,6 +1,6 @@
 /**
  * Cliente HTTP único para todas as chamadas de API
- * LOCK FRONTEND 2A: Chamadas reais para /auth/register e /auth/login
+ * LOCK FRONTEND 2A: Chamadas reais para /auth/register, /auth/login, /auth/refresh, /auth/logout
  */
 
 import type { ApiError, ApiResult } from '@/types/api';
@@ -64,8 +64,12 @@ export class HttpClient {
       };
     }
 
-    // LOCK FRONTEND 2A: Permitir chamadas reais APENAS para /auth/register e /auth/login
-    const isAuthEndpoint = endpoint === '/auth/register' || endpoint === '/auth/login';
+    // LOCK FRONTEND 2A: Permitir chamadas reais para endpoints de auth
+    const isAuthEndpoint = 
+      endpoint === '/auth/register' || 
+      endpoint === '/auth/login' || 
+      endpoint === '/auth/refresh' ||
+      endpoint === '/auth/logout';
     
     if (!isAuthEndpoint) {
       // Bloquear outras chamadas (LOCK FRONTEND 1 ainda ativo para outras rotas)
