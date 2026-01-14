@@ -1,6 +1,6 @@
 /**
  * Cliente HTTP único para todas as chamadas de API
- * LOCK FRONTEND 1: Modo base - valida ENV, NÃO faz chamadas reais
+ * LOCK FRONTEND 2A: Chamadas reais para /auth/register e /auth/login
  */
 
 import type { ApiError, ApiResult } from '@/types/api';
@@ -64,24 +64,137 @@ export class HttpClient {
       };
     }
 
-    // LOCK FRONTEND 1: NÃO fazer chamadas reais
-    // Apenas montar URL e retornar erro
+    // LOCK FRONTEND 2A: Permitir chamadas reais APENAS para /auth/register e /auth/login
+    const isAuthEndpoint = endpoint === '/auth/register' || endpoint === '/auth/login';
+    
+    if (!isAuthEndpoint) {
+      // Bloquear outras chamadas (LOCK FRONTEND 1 ainda ativo para outras rotas)
+      const url = endpoint.startsWith('http') 
+        ? endpoint 
+        : `${this.baseUrl}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
+      
+      if (typeof window !== 'undefined') {
+        console.warn(`🔒 LOCK FRONTEND 1: Chamada bloqueada - ${options.method} ${url}`);
+      }
+      
+      return {
+        ok: false,
+        error: {
+          status: 503,
+          message: 'Integração com backend desabilitada (LOCK FRONTEND 1)',
+          raw: { url, method: options.method },
+        },
+      };
+    }
+
+    // Construir URL completa
     const url = endpoint.startsWith('http') 
       ? endpoint 
       : `${this.baseUrl}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
     
-    if (typeof window !== 'undefined') {
-      console.warn(`🔒 LOCK FRONTEND 1: Chamada bloqueada - ${options.method} ${url}`);
-    }
-    
-    return {
-      ok: false,
-      error: {
-        status: 503,
-        message: 'Integração com backend desabilitada (LOCK FRONTEND 1)',
-        raw: { url, method: options.method },
-      },
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      ...options.headers,
     };
+
+    // Adicionar requestId se fornecido
+    if (options.requestId) {
+      headers[REQUEST_ID_HEADER] = options.requestId;
+    }
+
+    try {
+      const response = await fetch(url, {
+        method: options.method,
+        headers,
+        credentials: 'include', // CRÍTICO: Enviar cookies (HttpOnly)
+        body: options.body ? JSON.stringify(options.body) : undefined,
+      });
+
+      // Tentar parsear JSON, fallback para texto
+      let data: unknown;
+      const contentType = response.headers.get('content-type');
+      
+      if (contentType?.includes('application/json')) {
+        try {
+          data = await response.json();
+        } catch {
+          data = await response.text();
+        }
+      } else {
+        data = await response.text();
+      }
+
+      if (!response.ok) {
+        const error: ApiError = {
+          status: response.status,
+          message: this.extractErrorMessage(data),
+          raw: data,
+          requestId: this.extractRequestId(response, data),
+        };
+        return { ok: false, error };
+      }
+
+      // Backend retorna envelope: { success: true, data: {...}, requestId: "..." }
+      // Extrair data do envelope
+      let responseData = data;
+      if (data && typeof data === 'object') {
+        const envelope = data as Record<string, unknown>;
+        if (envelope.success === true && envelope.data !== undefined) {
+          responseData = envelope.data;
+        }
+      }
+
+      return { ok: true, data: responseData as TResponse };
+    } catch (error) {
+      const apiError: ApiError = {
+        status: 0,
+        message: error instanceof Error ? error.message : 'Erro de rede desconhecido',
+        raw: error,
+      };
+      return { ok: false, error: apiError };
+    }
+  }
+
+  private extractErrorMessage(data: unknown): string {
+    if (typeof data === 'string') {
+      return data || 'Erro desconhecido';
+    }
+    if (data && typeof data === 'object') {
+      const obj = data as Record<string, unknown>;
+      // Backend retorna envelope: { success: false, error: { message, code } }
+      if (obj.error && typeof obj.error === 'object') {
+        const error = obj.error as Record<string, unknown>;
+        if (error.message && typeof error.message === 'string') {
+          return error.message;
+        }
+      }
+      // Fallback para message direto
+      if (obj.message && typeof obj.message === 'string') {
+        return obj.message;
+      }
+    }
+    return 'Erro desconhecido';
+  }
+
+  private extractRequestId(response: Response, data: unknown): string | undefined {
+    // Tentar extrair do header
+    const headerRequestId = response.headers.get(REQUEST_ID_HEADER) || 
+                           response.headers.get('x-request-id') ||
+                           response.headers.get('request-id');
+    
+    if (headerRequestId) {
+      return headerRequestId;
+    }
+
+    // Tentar extrair do body
+    if (data && typeof data === 'object') {
+      const obj = data as Record<string, unknown>;
+      if (obj.requestId && typeof obj.requestId === 'string') {
+        return obj.requestId;
+      }
+    }
+
+    return undefined;
   }
 
   async get<TResponse>(

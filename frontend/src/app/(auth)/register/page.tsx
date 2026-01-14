@@ -1,15 +1,18 @@
 'use client';
 
 /**
- * Tela de Register - LOCK FRONTEND 1: Modo Base
- * Renderiza formulário, mas NÃO faz chamadas reais ao backend
+ * Tela de Register - LOCK FRONTEND 2A: AUTH REAL ISOLADO
+ * Integração real com backend apenas para register
  */
 
 import { useState, FormEvent } from 'react';
 import Link from 'next/link';
 import { useToast } from '@/providers/ToastProvider';
 import { ErrorState } from '@/components/feedback/ErrorState';
+import { LoadingState } from '@/components/feedback/LoadingState';
 import { t } from '@/lib/i18n';
+import { register } from '@/services/authService';
+import type { RegisterRequest } from '@/types/auth';
 
 export default function RegisterPage() {
   const { showToast } = useToast();
@@ -20,10 +23,12 @@ export default function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
+    setSuccess(false);
 
     // Validação básica
     if (password !== confirmPassword) {
@@ -39,13 +44,20 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
-      // LOCK FRONTEND 1: Mostrar erro de configuração
-      setError('Integração com backend desabilitada (LOCK FRONTEND 1)');
-      showToast('Integração com backend desabilitada', 'error');
+      const payload: RegisterRequest = { name, email, password };
+      const result = await register(payload);
+      
+      // Sucesso: exibir feedback visual
+      setSuccess(true);
+      showToast('Conta criada com sucesso!', 'success');
+      
+      // LOCK FRONTEND 2A: NÃO redirecionar automaticamente
+      // NÃO alterar estado global de sessão ainda
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erro ao criar conta';
       setError(errorMessage);
       showToast(errorMessage, 'error');
+      console.error('Erro no registro:', err);
     } finally {
       setIsLoading(false);
     }
@@ -61,6 +73,14 @@ export default function RegisterPage() {
           <p className="text-gray-600 mb-8 text-center">
             {t('page.register.description')}
           </p>
+
+          {success && (
+            <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-md">
+              <p className="text-sm text-green-800">
+                Conta criada com sucesso! (LOCK FRONTEND 2A: Sem redirect automático)
+              </p>
+            </div>
+          )}
 
           {error && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">

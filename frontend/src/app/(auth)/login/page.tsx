@@ -1,15 +1,17 @@
 'use client';
 
 /**
- * Tela de Login - LOCK FRONTEND 1: Modo Base
- * Renderiza formulário, mas NÃO faz chamadas reais ao backend
+ * Tela de Login - LOCK FRONTEND 2A: AUTH REAL ISOLADO
+ * Integração real com backend apenas para login
  */
 
 import { useState, FormEvent } from 'react';
 import Link from 'next/link';
 import { useToast } from '@/providers/ToastProvider';
 import { ErrorState } from '@/components/feedback/ErrorState';
+import { LoadingState } from '@/components/feedback/LoadingState';
 import { t } from '@/lib/i18n';
+import { login } from '@/services/authService';
 
 export default function LoginPage() {
   const { showToast } = useToast();
@@ -18,20 +20,28 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
+    setSuccess(false);
     setIsLoading(true);
 
     try {
-      // LOCK FRONTEND 1: Mostrar erro de configuração
-      setError('Integração com backend desabilitada (LOCK FRONTEND 1)');
-      showToast('Integração com backend desabilitada', 'error');
+      const result = await login({ email, password });
+      
+      // Sucesso: exibir feedback visual
+      setSuccess(true);
+      showToast('Login realizado com sucesso!', 'success');
+      
+      // LOCK FRONTEND 2A: NÃO redirecionar automaticamente
+      // NÃO alterar estado global de sessão ainda
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erro ao fazer login';
       setError(errorMessage);
       showToast(errorMessage, 'error');
+      console.error('Erro no login:', err);
     } finally {
       setIsLoading(false);
     }
@@ -47,6 +57,14 @@ export default function LoginPage() {
           <p className="text-gray-600 mb-8 text-center">
             {t('page.login.description')}
           </p>
+
+          {success && (
+            <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-md">
+              <p className="text-sm text-green-800">
+                Login realizado com sucesso! (LOCK FRONTEND 2A: Sem redirect automático)
+              </p>
+            </div>
+          )}
 
           {error && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
