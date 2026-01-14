@@ -1,8 +1,8 @@
 'use client';
 
 /**
- * Tela de Register - LOCK FRONTEND FINAL
- * Integração real com backend
+ * Tela de Register - LOCK RBAC 1
+ * Redirecionamento baseado em role e onboarding
  */
 
 import { useState, FormEvent, useEffect } from 'react';
@@ -17,7 +17,7 @@ import type { RegisterRequest } from '@/types/auth';
 
 export default function RegisterPage() {
   const router = useRouter();
-  const { register, status } = useAuth();
+  const { register, status, getPostLoginRoute } = useAuth();
   const { showToast } = useToast();
   
   const [name, setName] = useState('');
@@ -30,9 +30,10 @@ export default function RegisterPage() {
   // Redirecionar se já autenticado
   useEffect(() => {
     if (status === 'authenticated') {
-      router.push('/dashboard');
+      const route = getPostLoginRoute();
+      router.push(route);
     }
-  }, [status, router]);
+  }, [status, router, getPostLoginRoute]);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -55,7 +56,8 @@ export default function RegisterPage() {
       const payload: RegisterRequest = { name, email, password };
       await register(payload);
       showToast('Conta criada com sucesso!', 'success');
-      router.push('/dashboard');
+      const route = getPostLoginRoute();
+      router.push(route);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erro ao criar conta';
       setError(errorMessage);

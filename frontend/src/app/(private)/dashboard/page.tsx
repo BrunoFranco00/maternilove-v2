@@ -1,8 +1,8 @@
 'use client';
 
 /**
- * Dashboard - LOCK FRONTEND FINAL
- * Rota privada protegida
+ * Dashboard - LOCK RBAC 1
+ * Rota privada protegida com exibição de role
  */
 
 import { useRouter } from 'next/navigation';
@@ -10,6 +10,15 @@ import { t } from '@/lib/i18n';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/providers/ToastProvider';
+
+const ROLE_LABELS: Record<string, string> = {
+  USER: 'Usuário',
+  MOTHER: 'Mãe',
+  PROFESSIONAL: 'Profissional',
+  COMPANY: 'Empresa',
+  ADMIN: 'Administrador',
+  SUPER_ADMIN: 'Super Administrador',
+};
 
 function DashboardContent() {
   const router = useRouter();
@@ -26,6 +35,8 @@ function DashboardContent() {
       console.error('Erro no logout:', err);
     }
   };
+
+  const roleLabel = user?.role ? ROLE_LABELS[user.role] || user.role : '';
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -48,6 +59,11 @@ function DashboardContent() {
           <p className="text-sm text-blue-800">
             Bem-vindo, <strong>{user.name}</strong>! ({user.email})
           </p>
+          {roleLabel && (
+            <p className="text-sm text-blue-700 mt-1">
+              Perfil: <strong>{roleLabel}</strong>
+            </p>
+          )}
         </div>
       )}
       {/* Placeholder - conteúdo será implementado na Fase 2 */}

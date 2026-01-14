@@ -1,8 +1,8 @@
 'use client';
 
 /**
- * Tela de Login - LOCK FRONTEND FINAL
- * Integração real com backend
+ * Tela de Login - LOCK RBAC 1
+ * Redirecionamento baseado em role e onboarding
  */
 
 import { useState, FormEvent, useEffect } from 'react';
@@ -16,7 +16,7 @@ import { t } from '@/lib/i18n';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login, status } = useAuth();
+  const { login, status, getPostLoginRoute } = useAuth();
   const { showToast } = useToast();
   
   const [email, setEmail] = useState('');
@@ -27,9 +27,10 @@ export default function LoginPage() {
   // Redirecionar se já autenticado
   useEffect(() => {
     if (status === 'authenticated') {
-      router.push('/dashboard');
+      const route = getPostLoginRoute();
+      router.push(route);
     }
-  }, [status, router]);
+  }, [status, router, getPostLoginRoute]);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -39,7 +40,8 @@ export default function LoginPage() {
     try {
       await login(email, password);
       showToast('Login realizado com sucesso!', 'success');
-      router.push('/dashboard');
+      const route = getPostLoginRoute();
+      router.push(route);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erro ao fazer login';
       setError(errorMessage);
