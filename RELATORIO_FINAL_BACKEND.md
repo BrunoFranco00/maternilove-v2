@@ -442,3 +442,5 @@ curl https://maternilove-v2-production.up.railway.app/health
 
 **Próximos passos:** Configurar variáveis no Railway e Vercel, fazer deploy e testar.
 
+
+

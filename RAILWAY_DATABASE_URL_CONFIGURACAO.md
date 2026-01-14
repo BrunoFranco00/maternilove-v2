@@ -71,3 +71,5 @@ Após configurar, aguarde o deploy e verifique os logs:
 - ✅ `Backend running on 0.0.0.0:XXXX`
 - ✅ `Ready to receive requests!`
 
+
+

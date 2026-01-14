@@ -320,3 +320,5 @@ postgresql://postgres:DTcRyFBkLMlSaZCmlRnYKqynipajDKCE@trolley.proxy.rlwy.net:55
 
 **🎉 Depois de fazer isso, a plataforma deve funcionar perfeitamente!**
 
+
+

@@ -139,3 +139,5 @@ A plataforma está agora **100% funcional** com todas as funcionalidades interat
 
 **Deploy:** As mudanças serão automaticamente deployadas no Railway (backend) e Vercel (frontend).
 
+
+

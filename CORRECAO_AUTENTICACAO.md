@@ -94,3 +94,5 @@ O backend já está configurado e funcionando:
 - ✅ Validações frontend e backend
 - ✅ Tokens JWT sendo gerados e armazenados
 
+
+

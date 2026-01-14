@@ -189,3 +189,5 @@ Backend running on 0.0.0.0:XXXX
 
 **🎉 Todas as correções TypeScript foram aplicadas e testadas!**
 
+
+

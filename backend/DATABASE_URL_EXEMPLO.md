@@ -46,3 +46,5 @@ Isso previne:
 - ❌ Pool exhaustion
 - ❌ Timeouts indefinidos
 
+
+

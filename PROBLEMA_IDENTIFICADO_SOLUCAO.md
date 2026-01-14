@@ -104,3 +104,5 @@ Após configurar e fazer redeploy:
 
 **A API está perfeita, só falta essa configuração no Vercel! 🎉**
 
+
+

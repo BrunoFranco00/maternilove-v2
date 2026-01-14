@@ -144,3 +144,5 @@ npx prisma migrate deploy
 
 **Execute as migrations agora e depois teste novamente!**
 
+
+

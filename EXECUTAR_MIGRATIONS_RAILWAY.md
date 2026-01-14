@@ -136,3 +136,5 @@ npx prisma migrate deploy
 3. ✅ Testar login/registro
 4. ✅ Verificar se funcionalidades estão funcionando
 
+
+

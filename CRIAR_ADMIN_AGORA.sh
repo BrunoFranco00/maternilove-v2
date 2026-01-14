@@ -24,3 +24,5 @@ echo "🎯 Agora teste:"
 echo "   1. Login: https://maternilove-v2.vercel.app/login"
 echo "   2. Criar conta: https://maternilove-v2.vercel.app/register"
 
+
+

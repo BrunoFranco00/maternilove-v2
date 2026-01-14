@@ -95,3 +95,5 @@ npx prisma migrate deploy
 
 **Depois de executar, teste o login/registro novamente!**
 
+
+

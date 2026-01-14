@@ -113,3 +113,5 @@ O frontend está usando `import.meta.env.VITE_API_URL || 'http://localhost:3000'
 
 **Configure a variável e me avise quando terminar! 🚀**
 
+
+

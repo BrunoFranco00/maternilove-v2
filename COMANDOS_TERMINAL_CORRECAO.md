@@ -180,3 +180,5 @@ Após executar, serão criadas **45+ tabelas**:
 
 **Execute os comandos e me avise o resultado! 🚀**
 
+
+

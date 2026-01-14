@@ -1,21 +1,17 @@
 'use client';
 
 /**
- * Tela de Login
+ * Tela de Login - LOCK FRONTEND 1: Modo Base
+ * Renderiza formulário, mas NÃO faz chamadas reais ao backend
  */
 
 import { useState, FormEvent } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/providers/ToastProvider';
-import { LoadingState } from '@/components/feedback/LoadingState';
 import { ErrorState } from '@/components/feedback/ErrorState';
 import { t } from '@/lib/i18n';
 
 export default function LoginPage() {
-  const router = useRouter();
-  const { login, status } = useAuth();
   const { showToast } = useToast();
   
   const [email, setEmail] = useState('');
@@ -23,21 +19,15 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Se já está autenticado, redirecionar
-  if (status === 'authenticated') {
-    router.push('/dashboard');
-    return null;
-  }
-
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
     setIsLoading(true);
 
     try {
-      await login(email, password);
-      showToast('Login realizado com sucesso!', 'success');
-      router.push('/dashboard');
+      // LOCK FRONTEND 1: Mostrar erro de configuração
+      setError('Integração com backend desabilitada (LOCK FRONTEND 1)');
+      showToast('Integração com backend desabilitada', 'error');
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erro ao fazer login';
       setError(errorMessage);
@@ -46,10 +36,6 @@ export default function LoginPage() {
       setIsLoading(false);
     }
   };
-
-  if (status === 'unknown') {
-    return <LoadingState />;
-  }
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-8 bg-gray-50">

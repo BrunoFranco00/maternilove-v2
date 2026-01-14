@@ -33,3 +33,5 @@ else
     echo "❌ Erro ao criar tabelas. Verifique a conexão."
 fi
 
+
+

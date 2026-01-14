@@ -1,22 +1,17 @@
 'use client';
 
 /**
- * Tela de Register
+ * Tela de Register - LOCK FRONTEND 1: Modo Base
+ * Renderiza formulário, mas NÃO faz chamadas reais ao backend
  */
 
 import { useState, FormEvent } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/providers/ToastProvider';
-import { LoadingState } from '@/components/feedback/LoadingState';
 import { ErrorState } from '@/components/feedback/ErrorState';
 import { t } from '@/lib/i18n';
-import type { RegisterRequest } from '@/types/auth';
 
 export default function RegisterPage() {
-  const router = useRouter();
-  const { register, status } = useAuth();
   const { showToast } = useToast();
   
   const [name, setName] = useState('');
@@ -25,12 +20,6 @@ export default function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  // Se já está autenticado, redirecionar
-  if (status === 'authenticated') {
-    router.push('/dashboard');
-    return null;
-  }
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -50,10 +39,9 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
-      const data: RegisterRequest = { name, email, password };
-      await register(data);
-      showToast('Conta criada com sucesso!', 'success');
-      router.push('/dashboard');
+      // LOCK FRONTEND 1: Mostrar erro de configuração
+      setError('Integração com backend desabilitada (LOCK FRONTEND 1)');
+      showToast('Integração com backend desabilitada', 'error');
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erro ao criar conta';
       setError(errorMessage);
@@ -62,10 +50,6 @@ export default function RegisterPage() {
       setIsLoading(false);
     }
   };
-
-  if (status === 'unknown') {
-    return <LoadingState />;
-  }
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-8 bg-gray-50">
