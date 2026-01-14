@@ -125,7 +125,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, [httpClient, clearTokens, clearUser]);
 
   /**
-   * Carregar estado inicial do localStorage
+   * Carregar estado inicial e validar sessão ativa
    */
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -133,31 +133,53 @@ export function AuthProvider({ children }: AuthProviderProps) {
       return;
     }
 
-    try {
-      const storedUser = localStorage.getItem('user');
-      const storedAccessToken = localStorage.getItem('accessToken');
-      const storedRefreshToken = localStorage.getItem('refreshToken');
+    const validateSession = async () => {
+      try {
+        const storedUser = localStorage.getItem('user');
+        const storedAccessToken = localStorage.getItem('accessToken');
+        const storedRefreshToken = localStorage.getItem('refreshToken');
 
-      if (storedUser && storedAccessToken && storedRefreshToken) {
-        try {
-          const userData = JSON.parse(storedUser) as User;
-          setUser(userData);
-          setStatus('authenticated');
-        } catch {
-          // Dados inválidos, limpar
+        // Se não há tokens, não autenticado
+        if (!storedRefreshToken) {
+          setStatus('unauthenticated');
+          return;
+        }
+
+        // Validar refresh token para confirmar que a sessão está ativa
+        const request: RefreshRequest = { refreshToken: storedRefreshToken };
+        const result = await httpClient.post<RefreshResponse, RefreshRequest>('/auth/refresh', request);
+
+        if (result.ok && storedUser) {
+          try {
+            const userData = JSON.parse(storedUser) as User;
+            // Atualizar tokens com os novos recebidos
+            saveTokens(result.data.accessToken, result.data.refreshToken);
+            setUser(userData);
+            setStatus('authenticated');
+          } catch {
+            // Dados inválidos, limpar
+            clearTokens();
+            clearUser();
+            setStatus('unauthenticated');
+          }
+        } else {
+          // Refresh falhou, sessão inválida
           clearTokens();
           clearUser();
           setStatus('unauthenticated');
         }
-      } else {
+      } catch (error) {
+        // Erro ao validar sessão, considerar não autenticado
+        console.error('Error validating session:', error);
+        clearTokens();
+        clearUser();
         setStatus('unauthenticated');
       }
-    } catch (error) {
-      // Erro ao acessar localStorage, considerar não autenticado
-      console.error('Error accessing localStorage:', error);
-      setStatus('unauthenticated');
-    }
-  }, [clearTokens, clearUser]);
+    };
+
+    validateSession();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Executar apenas uma vez na montagem
 
   /**
    * Configurar callbacks do httpClient para refresh token

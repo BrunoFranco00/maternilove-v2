@@ -8,7 +8,25 @@ import type { ApiError, ApiResult } from '@/types/api';
 import type { RefreshResponse, RefreshRequest } from '@/types/auth';
 
 const REQUEST_ID_HEADER = process.env.NEXT_PUBLIC_REQUEST_ID_HEADER ?? 'x-request-id';
-const DEFAULT_BASE_URL = '/api/v1';
+
+// Base URL da API - obrigatória em produção
+const getBaseUrl = (): string => {
+  const envUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+  
+  if (!envUrl) {
+    if (typeof window !== 'undefined') {
+      console.error('❌ NEXT_PUBLIC_API_BASE_URL não configurada!');
+    }
+    // Fallback para desenvolvimento local (proxy via Next.js)
+    return '/api/v1';
+  }
+  
+  // Garantir que termina com /api/v1
+  const cleanUrl = envUrl.trim().replace(/\/+$/, '');
+  return `${cleanUrl}/api/v1`;
+};
+
+const DEFAULT_BASE_URL = getBaseUrl();
 
 interface HttpClientOptions {
   baseUrl?: string;
@@ -29,6 +47,11 @@ export class HttpClient {
 
   constructor(options: HttpClientOptions = {}) {
     this.baseUrl = options.baseUrl || DEFAULT_BASE_URL;
+    
+    // Validar baseUrl em runtime (apenas no cliente)
+    if (typeof window !== 'undefined' && !this.baseUrl) {
+      console.error('❌ Base URL da API não configurada! Configure NEXT_PUBLIC_API_BASE_URL');
+    }
   }
 
   /**
@@ -44,7 +67,11 @@ export class HttpClient {
    */
   private getAccessToken(): string | null {
     if (typeof window === 'undefined') return null;
-    return localStorage.getItem('accessToken');
+    try {
+      return localStorage.getItem('accessToken');
+    } catch {
+      return null;
+    }
   }
 
   /**
@@ -52,7 +79,11 @@ export class HttpClient {
    */
   private getRefreshToken(): string | null {
     if (typeof window === 'undefined') return null;
-    return localStorage.getItem('refreshToken');
+    try {
+      return localStorage.getItem('refreshToken');
+    } catch {
+      return null;
+    }
   }
 
   /**
@@ -60,7 +91,11 @@ export class HttpClient {
    */
   private setAccessToken(token: string): void {
     if (typeof window === 'undefined') return;
-    localStorage.setItem('accessToken', token);
+    try {
+      localStorage.setItem('accessToken', token);
+    } catch (error) {
+      console.error('Error saving access token:', error);
+    }
   }
 
   /**
@@ -68,8 +103,12 @@ export class HttpClient {
    */
   private setTokens(accessToken: string, refreshToken: string): void {
     if (typeof window === 'undefined') return;
-    localStorage.setItem('accessToken', accessToken);
-    localStorage.setItem('refreshToken', refreshToken);
+    try {
+      localStorage.setItem('accessToken', accessToken);
+      localStorage.setItem('refreshToken', refreshToken);
+    } catch (error) {
+      console.error('Error saving tokens:', error);
+    }
   }
 
   /**
@@ -77,8 +116,12 @@ export class HttpClient {
    */
   private clearTokens(): void {
     if (typeof window === 'undefined') return;
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
+    try {
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+    } catch (error) {
+      console.error('Error clearing tokens:', error);
+    }
   }
 
   /**
@@ -153,7 +196,11 @@ export class HttpClient {
       retry?: boolean; // Flag para evitar loop infinito
     }
   ): Promise<ApiResult<TResponse>> {
-    const url = `${this.baseUrl}${endpoint}`;
+    // Construir URL completa
+    const url = endpoint.startsWith('http') 
+      ? endpoint 
+      : `${this.baseUrl}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
+    
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       ...options.headers,
@@ -174,7 +221,7 @@ export class HttpClient {
       const response = await fetch(url, {
         method: options.method,
         headers,
-        credentials: 'include', // Suporte a cookies
+        credentials: 'include', // CRÍTICO: Enviar cookies (HttpOnly)
         body: options.body ? JSON.stringify(options.body) : undefined,
       });
 
@@ -225,7 +272,17 @@ export class HttpClient {
         return { ok: false, error };
       }
 
-      return { ok: true, data: data as TResponse };
+      // Backend retorna envelope: { success: true, data: {...}, requestId: "..." }
+      // Extrair data do envelope
+      let responseData = data;
+      if (data && typeof data === 'object') {
+        const envelope = data as Record<string, unknown>;
+        if (envelope.success === true && envelope.data !== undefined) {
+          responseData = envelope.data;
+        }
+      }
+
+      return { ok: true, data: responseData as TResponse };
     } catch (error) {
       const apiError: ApiError = {
         status: 0,
@@ -242,14 +299,16 @@ export class HttpClient {
     }
     if (data && typeof data === 'object') {
       const obj = data as Record<string, unknown>;
-      if (obj.message && typeof obj.message === 'string') {
-        return obj.message;
-      }
+      // Backend retorna envelope: { success: false, error: { message, code } }
       if (obj.error && typeof obj.error === 'object') {
         const error = obj.error as Record<string, unknown>;
         if (error.message && typeof error.message === 'string') {
           return error.message;
         }
+      }
+      // Fallback para message direto
+      if (obj.message && typeof obj.message === 'string') {
+        return obj.message;
       }
     }
     return 'Erro desconhecido';
