@@ -10,6 +10,7 @@ import { contextMiddleware } from './shared/middleware/context.middleware.js';
 import { AppError } from './shared/errors/AppError.js';
 import { ErrorCode } from './shared/errors/ErrorCatalog.js';
 import authRoutes from './modules/auth/routes.js';
+import onboardingRoutes from './modules/onboarding/routes.js';
 import socialRoutes from './modules/social/routes.js';
 import communityRoutes from './modules/community/routes.js';
 import marketplaceRoutes from './modules/marketplace/routes.js';
@@ -257,6 +258,7 @@ app.get('/api', (req: Request, res: Response) => {
     endpoints: {
       health: '/health',
       auth: '/api/v1/auth',
+      onboarding: '/api/v1/onboarding',
       social: '/api/v1/social',
       community: '/api/v1/community',
       marketplace: '/api/v1/marketplace',
@@ -271,6 +273,7 @@ app.get('/api', (req: Request, res: Response) => {
 // ROTAS VERSIONADAS (/api/v1/*) - RECOMENDADO
 // ============================================================================
 app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/onboarding', onboardingRoutes);
 app.use('/api/v1/social', socialRoutes);
 app.use('/api/v1/community', communityRoutes);
 app.use('/api/v1/marketplace', marketplaceRoutes);
