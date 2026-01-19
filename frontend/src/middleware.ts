@@ -72,13 +72,6 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  if (pathname.startsWith('/onboarding')) {
-    if (!userRole) {
-      return NextResponse.redirect(new URL('/login', request.url));
-    }
-    return NextResponse.next();
-  }
-
   if (pathname.startsWith('/dashboard')) {
     if (!userRole) {
       return NextResponse.redirect(new URL('/login', request.url));
