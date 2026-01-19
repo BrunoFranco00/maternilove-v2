@@ -19,7 +19,7 @@ export default function AdminLayout({
         <nav className="bg-white shadow-sm border-b">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex space-x-8">
-              <a href="/admin" className="border-b-2 border-primary-600 py-4 px-1 text-sm font-medium text-primary-600">
+              <a href="/admin/overview" className="border-b-2 border-primary-600 py-4 px-1 text-sm font-medium text-primary-600">
                 Visão Geral
               </a>
               <a href="/admin/users" className="border-b-2 border-transparent py-4 px-1 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300">

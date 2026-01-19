@@ -66,6 +66,9 @@ export function middleware(request: NextRequest) {
     if (!hasAccess) {
       return NextResponse.redirect(new URL('/', request.url));
     }
+    if (pathname === '/admin') {
+      return NextResponse.redirect(new URL('/admin/overview', request.url));
+    }
     return NextResponse.next();
   }
 
