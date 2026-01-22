@@ -1,4 +1,17 @@
+'use client';
+
+import { useMemo } from 'react';
+
+const METRICS = [
+  { label: 'Total de Usuários', value: '0' },
+  { label: 'Usuários Ativos', value: '0' },
+  { label: 'Novos Hoje', value: '0' },
+  { label: 'Feature Flags', value: '6' },
+] as const;
+
 export default function AdminOverviewPage() {
+  const metricsList = useMemo(() => METRICS, []);
+
   return (
     <div className="p-4 md:p-8">
       <div className="max-w-6xl mx-auto space-y-6">
@@ -12,22 +25,17 @@ export default function AdminOverviewPage() {
         </div>
 
         <div className="grid gap-4 md:grid-cols-4">
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <h3 className="text-sm font-medium text-gray-600 mb-1">Total de Usuários</h3>
-            <p className="text-3xl font-bold text-gray-900">0</p>
-          </div>
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <h3 className="text-sm font-medium text-gray-600 mb-1">Usuários Ativos</h3>
-            <p className="text-3xl font-bold text-gray-900">0</p>
-          </div>
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <h3 className="text-sm font-medium text-gray-600 mb-1">Novos Hoje</h3>
-            <p className="text-3xl font-bold text-gray-900">0</p>
-          </div>
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <h3 className="text-sm font-medium text-gray-600 mb-1">Feature Flags</h3>
-            <p className="text-3xl font-bold text-gray-900">6</p>
-          </div>
+          {metricsList.map((metric, index) => (
+            <div
+              key={index}
+              className="bg-white rounded-xl shadow-sm p-6"
+            >
+              <h3 className="text-sm font-medium text-gray-600 mb-1">{metric.label}</h3>
+              <p className="text-3xl font-bold text-gray-900" aria-label={`${metric.label}: ${metric.value}`}>
+                {metric.value}
+              </p>
+            </div>
+          ))}
         </div>
       </div>
     </div>

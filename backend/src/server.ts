@@ -15,6 +15,7 @@ import socialRoutes from './modules/social/routes.js';
 import communityRoutes from './modules/community/routes.js';
 import marketplaceRoutes from './modules/marketplace/routes.js';
 import journeyRoutes from './modules/journey/routes.js';
+import adminRoutes from './routes/admin.routes.js';
 import { authenticate } from './middleware/auth.middleware.js';
 import { authorize } from './shared/middleware/authorize.middleware.js';
 import { asyncHandler } from './shared/utils/asyncHandler.js';
@@ -278,6 +279,7 @@ app.use('/api/v1/social', socialRoutes);
 app.use('/api/v1/community', communityRoutes);
 app.use('/api/v1/marketplace', marketplaceRoutes);
 app.use('/api/v1/journey', journeyRoutes);
+app.use('/api/v1/admin', adminRoutes);
 
 // Placeholder Route versionada
 app.get('/api/v1/users', (req: Request, res: Response) => {

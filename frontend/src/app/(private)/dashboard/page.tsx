@@ -46,7 +46,8 @@ function DashboardContent() {
         </h1>
         <button
           onClick={handleLogout}
-          className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+          aria-label="Sair da conta"
+          className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors"
         >
           Sair
         </button>
@@ -57,7 +58,7 @@ function DashboardContent() {
       {user && (
         <div className="mb-4 p-4 bg-blue-50 rounded-lg">
           <p className="text-sm text-blue-800">
-            Bem-vindo, <strong>{user.name}</strong>! ({user.email})
+            Usuário: <strong>{user.name}</strong> ({user.email})
           </p>
           {roleLabel && (
             <p className="text-sm text-blue-700 mt-1">
@@ -66,10 +67,9 @@ function DashboardContent() {
           )}
         </div>
       )}
-      {/* Placeholder - conteúdo será implementado na Fase 2 */}
       <div className="bg-gray-50 p-8 rounded-lg border border-gray-200">
         <p className="text-sm text-gray-500 text-center">
-          Dashboard será implementado na Fase 2
+          Conteúdo em desenvolvimento
         </p>
       </div>
     </div>

@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { validateBody } from '../../shared/middleware/validate.middleware.js';
 import { authenticate } from '../../middleware/auth.middleware.js';
-import { authLimiter } from '../../middleware/rateLimiter.middleware.js';
+import { loginLimiter, registerLimiter } from '../../middleware/rateLimiter.middleware.js';
 import { asyncHandler } from '../../shared/utils/asyncHandler.js';
 import {
   registerBodySchema,
@@ -22,9 +22,9 @@ const service = new AuthService(repository);
 const controller = new AuthController(service);
 
 // Rotas públicas (usando asyncHandler para capturar erros assíncronos)
-router.post('/register', authLimiter, validateBody(registerBodySchema), asyncHandler(controller.register));
-router.post('/login', authLimiter, validateBody(loginBodySchema), asyncHandler(controller.login));
-router.post('/refresh', authLimiter, validateBody(refreshTokenBodySchema), asyncHandler(controller.refreshToken));
+router.post('/register', registerLimiter, validateBody(registerBodySchema), asyncHandler(controller.register));
+router.post('/login', loginLimiter, validateBody(loginBodySchema), asyncHandler(controller.login));
+router.post('/refresh', loginLimiter, validateBody(refreshTokenBodySchema), asyncHandler(controller.refreshToken));
 
 // Rotas protegidas (logout pode ser feito sem autenticação, apenas com refresh token válido)
 router.post('/logout', validateBody(logoutBodySchema), asyncHandler(controller.logout));

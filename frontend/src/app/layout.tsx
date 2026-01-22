@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Providers } from '@/providers/Providers';
+import { ErrorBoundary } from '@/components/guards/ErrorBoundary';
 import '../styles/globals.css';
 
 export const metadata: Metadata = {
@@ -49,10 +50,12 @@ export default function RootLayout({
         <meta name="msapplication-TileColor" content="#ec4899" />
         <meta name="msapplication-config" content="/browserconfig.xml" />
       </head>
-      <body suppressHydrationWarning>
-        <Providers>
-          {children}
-        </Providers>
+      <body suppressHydrationWarning className="focus-visible:outline-none">
+        <ErrorBoundary>
+          <Providers>
+            {children}
+          </Providers>
+        </ErrorBoundary>
       </body>
     </html>
   );
