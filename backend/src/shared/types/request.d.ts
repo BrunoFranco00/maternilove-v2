@@ -6,7 +6,7 @@ declare global {
       user?: {
         id: string;
         email?: string;
-        role: 'USER' | 'MOTHER' | 'PROFESSIONAL' | 'COMPANY' | 'ADMIN' | 'SUPER_ADMIN';
+        role: 'USER' | 'MOTHER' | 'PROFESSIONAL' | 'COMPANY' | 'ADMIN' | 'SUPER_ADMIN' | 'TESTER';
       };
       context: {
         requestId: string;

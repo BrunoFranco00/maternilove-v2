@@ -23,7 +23,7 @@ export const authenticate = (req: Request, res: Response, next: NextFunction): v
     req.user = {
       id: decoded.userId,
       email: decoded.email,
-      role: decoded.role as 'USER' | 'MOTHER' | 'PROFESSIONAL' | 'COMPANY' | 'ADMIN' | 'SUPER_ADMIN',
+      role: decoded.role as 'USER' | 'MOTHER' | 'PROFESSIONAL' | 'COMPANY' | 'ADMIN' | 'SUPER_ADMIN' | 'TESTER',
     };
     next();
   } catch (error) {

@@ -63,6 +63,7 @@ enum UserRole {
   COMPANY
   ADMIN
   SUPER_ADMIN
+  TESTER
 }
 
 enum UserStatus {
