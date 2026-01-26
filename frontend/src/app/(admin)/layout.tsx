@@ -2,6 +2,7 @@
 
 import { RoleGuard } from '@/components/guards/RoleGuard';
 import { useAuth } from '@/hooks/useAuth';
+import { UserRole, normalizeRole } from '@/lib/auth/roles';
 
 export default function AdminLayout({
   children,
@@ -9,11 +10,12 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const { user } = useAuth();
+  const userRole = user?.role ? normalizeRole(user.role) as UserRole : undefined;
 
   return (
     <RoleGuard
       allowedRoles={['ADMIN', 'SUPER_ADMIN']}
-      userRole={user?.role as any}
+      userRole={userRole}
     >
       <div className="min-h-screen bg-gray-50">
         <nav className="bg-white shadow-sm border-b">

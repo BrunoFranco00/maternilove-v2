@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { UserRole } from '@/lib/auth/roles';
+import { UserRole, normalizeRole } from '@/lib/auth/roles';
 import { checkRoleAccess } from '@/lib/auth/permissions';
 import { DEFAULT_FEATURE_FLAGS } from '@/lib/flags/featureFlags';
 
@@ -23,7 +23,8 @@ export function middleware(request: NextRequest) {
   }
 
   const userRoleCookie = request.cookies.get('user_role');
-  const userRole = userRoleCookie?.value as UserRole | undefined;
+  const userRoleRaw = userRoleCookie?.value;
+  const userRole = userRoleRaw ? normalizeRole(userRoleRaw) as UserRole : undefined;
 
   if (pathname.startsWith('/core-emotional')) {
     const flagEnabled = DEFAULT_FEATURE_FLAGS.CORE_EMOTIONAL_ENABLED?.enabled ?? false;

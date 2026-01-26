@@ -82,6 +82,34 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, []);
 
   /**
+   * Setar cookie user_role
+   */
+  const setUserRoleCookie = useCallback((role: string) => {
+    if (typeof window === 'undefined') return;
+    try {
+      // Cookie válido por 7 dias, sempre em uppercase
+      const roleUpper = role.toUpperCase();
+      const expires = new Date();
+      expires.setTime(expires.getTime() + 7 * 24 * 60 * 60 * 1000);
+      document.cookie = `user_role=${roleUpper}; expires=${expires.toUTCString()}; path=/; SameSite=Lax`;
+    } catch (error) {
+      console.error('Error setting user_role cookie:', error);
+    }
+  }, []);
+
+  /**
+   * Limpar cookie user_role
+   */
+  const clearUserRoleCookie = useCallback(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      document.cookie = 'user_role=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+    } catch (error) {
+      console.error('Error clearing user_role cookie:', error);
+    }
+  }, []);
+
+  /**
    * Salvar usuário no localStorage
    */
   const saveUser = useCallback((userData: User) => {
@@ -89,10 +117,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       localStorage.setItem('user', JSON.stringify(userData));
       setUser(userData);
+      setUserRoleCookie(userData.role);
     } catch (error) {
       console.error('Error saving user:', error);
     }
-  }, []);
+  }, [setUserRoleCookie]);
 
   /**
    * Limpar usuário do localStorage
@@ -103,10 +132,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
       localStorage.removeItem('user');
       setUser(null);
       setIsOnboardingCompleted(false);
+      clearUserRoleCookie();
     } catch (error) {
       console.error('Error clearing user:', error);
     }
-  }, []);
+  }, [clearUserRoleCookie]);
 
   /**
    * Verificar se onboarding está completo (frontend-only)

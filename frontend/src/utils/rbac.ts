@@ -43,12 +43,12 @@ const ROLE_PERMISSIONS: Record<UserRole, RolePermissions> = {
   ADMIN: {
     canAccessDashboard: true,
     requiresOnboarding: false,
-    defaultRoute: '/dashboard',
+    defaultRoute: '/admin/overview',
   },
   SUPER_ADMIN: {
     canAccessDashboard: true,
     requiresOnboarding: false,
-    defaultRoute: '/dashboard',
+    defaultRoute: '/admin/overview',
   },
 };
 
