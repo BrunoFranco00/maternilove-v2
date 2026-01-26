@@ -1,20 +1,15 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { UserRole, normalizeRole } from '@/lib/auth/roles';
-import { checkRoleAccess } from '@/lib/auth/permissions';
-import { DEFAULT_FEATURE_FLAGS } from '@/lib/flags/featureFlags';
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  if (pathname.startsWith('/api')) {
+  // Permitir acesso a APIs e assets do Next.js
+  if (pathname.startsWith('/api') || pathname.startsWith('/_next')) {
     return NextResponse.next();
   }
 
-  if (pathname.startsWith('/_next')) {
-    return NextResponse.next();
-  }
-
+  // Rotas públicas - permitir acesso sem autenticação
   const publicRoutes = ['/', '/login', '/register'];
   const isPublicRoute = publicRoutes.some(route => pathname === route || pathname.startsWith(route));
 
@@ -22,64 +17,17 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const userRoleCookie = request.cookies.get('user_role');
-  const userRoleRaw = userRoleCookie?.value;
-  const userRole = userRoleRaw ? normalizeRole(userRoleRaw) as UserRole : undefined;
-
-  if (pathname.startsWith('/core-emotional')) {
-    const flagEnabled = DEFAULT_FEATURE_FLAGS.CORE_EMOTIONAL_ENABLED?.enabled ?? false;
-    if (!flagEnabled) {
-      return NextResponse.redirect(new URL('/', request.url));
-    }
-    if (!userRole) {
-      return NextResponse.redirect(new URL('/login', request.url));
-    }
-    return NextResponse.next();
+  // Verificar se há indicador de autenticação (user_role cookie)
+  // O AuthProvider seta este cookie quando o usuário faz login
+  const userRoleCookie = request.cookies.get('user_role')?.value;
+  
+  // Se não houver cookie de autenticação, redirecionar para login
+  if (!userRoleCookie) {
+    return NextResponse.redirect(new URL('/login', request.url));
   }
 
-  if (pathname.startsWith('/user')) {
-    if (!userRole) {
-      return NextResponse.redirect(new URL('/login', request.url));
-    }
-    const hasAccess = checkRoleAccess(userRole, ['MOTHER', 'PROFESSIONAL', 'COMPANY', 'USER']);
-    if (!hasAccess) {
-      return NextResponse.redirect(new URL('/', request.url));
-    }
-    return NextResponse.next();
-  }
-
-  if (pathname.startsWith('/testers')) {
-    if (!userRole) {
-      return NextResponse.redirect(new URL('/login', request.url));
-    }
-    const hasAccess = checkRoleAccess(userRole, ['SUPER_ADMIN']);
-    if (!hasAccess) {
-      return NextResponse.redirect(new URL('/', request.url));
-    }
-    return NextResponse.next();
-  }
-
-  if (pathname.startsWith('/admin')) {
-    if (!userRole) {
-      return NextResponse.redirect(new URL('/login', request.url));
-    }
-    const hasAccess = checkRoleAccess(userRole, ['ADMIN', 'SUPER_ADMIN']);
-    if (!hasAccess) {
-      return NextResponse.redirect(new URL('/', request.url));
-    }
-    if (pathname === '/admin') {
-      return NextResponse.redirect(new URL('/admin/overview', request.url));
-    }
-    return NextResponse.next();
-  }
-
-  if (pathname.startsWith('/dashboard')) {
-    if (!userRole) {
-      return NextResponse.redirect(new URL('/login', request.url));
-    }
-    return NextResponse.next();
-  }
-
+  // Se houver cookie de autenticação, permitir acesso
+  // RBAC e decisões de rota serão feitas no client (RoleGuard, AuthProvider)
   return NextResponse.next();
 }
 
