@@ -9,7 +9,7 @@
     "build": "tsc",
     "postinstall": "prisma generate",
     "prestart": "node dist/scripts/resolveFailedMigration.js || true && prisma migrate deploy",
-    "start": "npx prisma migrate deploy && node dist/src/server.js",
+    "start": "node dist/src/scripts/createAdminUser.js && node dist/src/server.js",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
