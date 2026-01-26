@@ -16,7 +16,7 @@ import { t } from '@/lib/i18n';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login, status, getPostLoginRoute } = useAuth();
+  const { login, status } = useAuth();
   const { showToast } = useToast();
   
   const [email, setEmail] = useState('');
@@ -24,13 +24,8 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Redirecionar se já autenticado
-  useEffect(() => {
-    if (status === 'authenticated') {
-      const route = getPostLoginRoute();
-      router.push(route);
-    }
-  }, [status, router, getPostLoginRoute]);
+  // Se já autenticado, o PostLoginRedirect vai redirecionar automaticamente
+  // Não fazer redirect manual aqui para evitar loops
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -40,8 +35,9 @@ export default function LoginPage() {
     try {
       await login(email, password);
       showToast('Login realizado com sucesso!', 'success');
-      const route = getPostLoginRoute();
-      router.push(route);
+      // NÃO fazer redirect manual - deixar o RoleGuard decidir
+      // O AuthProvider já atualizou o status para 'authenticated'
+      // O RoleGuard vai redirecionar automaticamente
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erro ao fazer login';
       setError(errorMessage);
@@ -57,7 +53,8 @@ export default function LoginPage() {
   }
 
   if (status === 'authenticated') {
-    return null; // Redirecionando
+    // Mostrar loading enquanto redireciona (RoleGuard vai decidir)
+    return <LoadingState />;
   }
 
   return (
