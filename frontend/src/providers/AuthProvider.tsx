@@ -1,14 +1,19 @@
 'use client';
 
 /**
- * Auth Provider - LOCK RBAC 1
- * Implementação completa de autenticação com RBAC e Onboarding
+ * Auth Provider - estado único de autenticação
+ * - authStatus: 'loading' | 'authenticated' | 'unauthenticated'
+ * - Validação via refresh (backend)
+ * - Redirects centralizados, apenas quando status definitivo
+ * - Nunca redirect enquanto loading
  */
 
-import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
 import * as authService from '@/services/authService';
 import { getOnboardingRoute, getDefaultRoute, requiresOnboarding, isAdmin } from '@/utils/rbac';
+import { isPublicRoute } from '@/lib/auth/constants';
+import { normalizeRole } from '@/lib/auth/roles';
 import type {
   AuthStatus,
   User,
@@ -50,13 +55,12 @@ const ONBOARDING_STORAGE_KEY = 'onboardingCompleted';
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const router = useRouter();
-  const [status, setStatus] = useState<AuthStatus>('unknown');
+  const pathname = usePathname();
+  const [status, setStatus] = useState<AuthStatus>('loading');
   const [user, setUser] = useState<User | null>(null);
   const [isOnboardingCompleted, setIsOnboardingCompleted] = useState<boolean>(false);
+  const hasRedirectedRef = useRef(false);
 
-  /**
-   * Salvar tokens no localStorage
-   */
   const saveTokens = useCallback((accessToken: string, refreshTokenValue: string) => {
     if (typeof window === 'undefined') return;
     try {
@@ -67,9 +71,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, []);
 
-  /**
-   * Limpar tokens do localStorage
-   */
   const clearTokens = useCallback(() => {
     if (typeof window === 'undefined') return;
     try {
@@ -81,14 +82,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, []);
 
-  /**
-   * Setar cookie user_role
-   */
   const setUserRoleCookie = useCallback((role: string) => {
     if (typeof window === 'undefined') return;
     try {
-      // Cookie válido por 7 dias, sempre em uppercase
-      const roleUpper = role.toUpperCase();
+      const roleUpper = normalizeRole(role);
       const expires = new Date();
       expires.setTime(expires.getTime() + 7 * 24 * 60 * 60 * 1000);
       document.cookie = `user_role=${roleUpper}; expires=${expires.toUTCString()}; path=/; SameSite=Lax`;
@@ -97,9 +94,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, []);
 
-  /**
-   * Limpar cookie user_role
-   */
   const clearUserRoleCookie = useCallback(() => {
     if (typeof window === 'undefined') return;
     try {
@@ -109,23 +103,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, []);
 
-  /**
-   * Salvar usuário no localStorage
-   */
+  /** Salvar usuário: role normalizado em UM único lugar (lib/auth/roles) */
   const saveUser = useCallback((userData: User) => {
     if (typeof window === 'undefined') return;
     try {
-      localStorage.setItem('user', JSON.stringify(userData));
-      setUser(userData);
-      setUserRoleCookie(userData.role);
+      const normalized = { ...userData, role: normalizeRole(userData.role) };
+      localStorage.setItem('user', JSON.stringify(normalized));
+      setUser(normalized);
+      setUserRoleCookie(normalized.role);
     } catch (error) {
       console.error('Error saving user:', error);
     }
   }, [setUserRoleCookie]);
 
-  /**
-   * Limpar usuário do localStorage
-   */
   const clearUser = useCallback(() => {
     if (typeof window === 'undefined') return;
     try {
@@ -138,9 +128,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, [clearUserRoleCookie]);
 
-  /**
-   * Verificar se onboarding está completo (frontend-only)
-   */
   const checkOnboardingStatus = useCallback(() => {
     if (typeof window === 'undefined') return false;
     try {
@@ -153,31 +140,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, []);
 
-  /**
-   * Obter rota pós-login baseada em role e onboarding
-   */
   const getPostLoginRoute = useCallback((): string => {
     if (!user) return '/login';
-    
-    // Admin nunca vê onboarding
-    if (isAdmin(user.role)) {
-      return getDefaultRoute(user.role);
-    }
-
-    // Se role requer onboarding
+    if (isAdmin(user.role)) return getDefaultRoute(user.role);
     if (requiresOnboarding(user.role)) {
       const onboardingRoute = getOnboardingRoute(user.role);
-      if (onboardingRoute && !isOnboardingCompleted) {
-        return onboardingRoute;
-      }
+      if (onboardingRoute && !isOnboardingCompleted) return onboardingRoute;
     }
-
     return getDefaultRoute(user.role);
   }, [user, isOnboardingCompleted]);
 
-  /**
-   * Completar onboarding
-   */
   const completeOnboarding = useCallback(() => {
     if (typeof window === 'undefined') return;
     try {
@@ -188,27 +160,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, []);
 
-  /**
-   * Refresh token
-   */
   const refresh = useCallback(async (): Promise<void> => {
     if (typeof window === 'undefined') return;
-    
     const storedRefreshToken = localStorage.getItem('refreshToken');
-    
     if (!storedRefreshToken) {
       setStatus('unauthenticated');
       return;
     }
-
     try {
       const request: RefreshRequest = { refreshToken: storedRefreshToken };
       const result = await authService.refresh(request);
-      
-      // Atualizar tokens
       saveTokens(result.accessToken, result.refreshToken);
-      
-      // Restaurar usuário do localStorage
       const storedUser = localStorage.getItem('user');
       if (storedUser) {
         try {
@@ -223,7 +185,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setStatus('unauthenticated');
       }
     } catch (error) {
-      // Refresh falhou, logout
       console.error('Refresh token failed:', error);
       clearTokens();
       clearUser();
@@ -231,107 +192,87 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, [saveTokens, saveUser, clearTokens, clearUser, checkOnboardingStatus]);
 
-  /**
-   * Login
-   */
   const login = useCallback(async (email: string, password: string): Promise<void> => {
     const request: LoginRequest = { email, password };
     const result: LoginResponse = await authService.login(request);
-
     saveTokens(result.tokens.accessToken, result.tokens.refreshToken);
     saveUser(result.user);
     checkOnboardingStatus();
     setStatus('authenticated');
   }, [saveTokens, saveUser, checkOnboardingStatus]);
 
-  /**
-   * Register
-   */
   const register = useCallback(async (data: RegisterRequest): Promise<void> => {
     const result: RegisterResponse = await authService.register(data);
-
     saveTokens(result.tokens.accessToken, result.tokens.refreshToken);
     saveUser(result.user);
-    // Novo registro sempre inicia com onboarding pendente
     setIsOnboardingCompleted(false);
     setStatus('authenticated');
   }, [saveTokens, saveUser]);
 
-  /**
-   * Logout
-   */
   const logout = useCallback(async (): Promise<void> => {
     if (typeof window === 'undefined') return;
-    
     const storedRefreshToken = localStorage.getItem('refreshToken');
-    
-    // Tentar fazer logout no backend (idempotente)
     if (storedRefreshToken) {
       try {
-        const request: LogoutRequest = { refreshToken: storedRefreshToken };
-        await authService.logout(request);
-      } catch (error) {
-        // Logout é idempotente, ignorar erros
-        console.error('Error on logout:', error);
+        await authService.logout({ refreshToken: storedRefreshToken });
+      } catch (e) {
+        console.error('Error on logout:', e);
       }
     }
-
     clearTokens();
     clearUser();
     setStatus('unauthenticated');
-    router.push('/login');
+    hasRedirectedRef.current = false;
+    router.replace('/login');
   }, [clearTokens, clearUser, router]);
 
-  /**
-   * Carregar estado inicial e validar sessão
-   */
+  /** Inicialização: validar token no backend (refresh). Status inicia 'loading'. */
   useEffect(() => {
     if (typeof window === 'undefined') {
       setStatus('unauthenticated');
       return;
     }
-
-    const initializeAuth = async () => {
+    const init = async () => {
+      const storedRefreshToken = localStorage.getItem('refreshToken');
+      const storedUser = localStorage.getItem('user');
+      if (!storedRefreshToken || !storedUser) {
+        setStatus('unauthenticated');
+        return;
+      }
       try {
-        const storedRefreshToken = localStorage.getItem('refreshToken');
-        const storedUser = localStorage.getItem('user');
-
-        if (storedRefreshToken && storedUser) {
-          // Tentar refresh para validar sessão
-          try {
-            const request: RefreshRequest = { refreshToken: storedRefreshToken };
-            const result = await authService.refresh(request);
-            
-            // Atualizar tokens
-            saveTokens(result.accessToken, result.refreshToken);
-            
-            // Restaurar usuário
-            try {
-              const userData = JSON.parse(storedUser) as User;
-              saveUser(userData);
-              checkOnboardingStatus();
-              setStatus('authenticated');
-            } catch {
-              setStatus('unauthenticated');
-            }
-          } catch {
-            // Refresh falhou
-            clearTokens();
-            clearUser();
-            setStatus('unauthenticated');
-          }
-        } else {
-          setStatus('unauthenticated');
-        }
-      } catch (error) {
-        console.error('Error initializing auth:', error);
+        const request: RefreshRequest = { refreshToken: storedRefreshToken };
+        const result = await authService.refresh(request);
+        saveTokens(result.accessToken, result.refreshToken);
+        const userData = JSON.parse(storedUser) as User;
+        saveUser(userData);
+        checkOnboardingStatus();
+        setStatus('authenticated');
+      } catch {
+        clearTokens();
+        clearUser();
         setStatus('unauthenticated');
       }
     };
-
-    initializeAuth();
+    init();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Executar apenas uma vez na montagem
+  }, []);
+
+  /**
+   * Redirect centralizado: APENAS quando status definitivo.
+   * NUNCA redirect enquanto status === 'loading'.
+   * Rotas públicas: nunca redirecionar para fora; permitir render estável.
+   * Se autenticado em /login ou /register → redirect UMA vez para getPostLoginRoute().
+   */
+  useEffect(() => {
+    if (status === 'loading') return;
+    if (!isPublicRoute(pathname)) return;
+    if (status !== 'authenticated' || !user) return;
+    const target = getPostLoginRoute();
+    if (pathname === target) return;
+    if (hasRedirectedRef.current) return;
+    hasRedirectedRef.current = true;
+    router.replace(target);
+  }, [status, user, pathname, getPostLoginRoute, router]);
 
   const value: AuthContextValue = {
     status,

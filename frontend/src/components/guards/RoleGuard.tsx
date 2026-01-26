@@ -2,6 +2,7 @@
 
 import { useEffect, ReactNode, useState, useRef } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
+import { useAuth } from '@/hooks/useAuth';
 import { UserRole } from '@/lib/auth/roles';
 import { checkRoleAccess } from '@/lib/auth/permissions';
 
@@ -12,22 +13,21 @@ interface RoleGuardProps {
   userRole?: UserRole;
 }
 
+/**
+ * RoleGuard: bloqueia acesso por role.
+ * NUNCA redirect enquanto status === 'loading'.
+ * router.replace apenas UMA vez por transição.
+ * UI nunca fica presa em "Carregando...": loading só enquanto status === 'loading'.
+ */
 export function RoleGuard({ children, allowedRoles, fallbackRoute = '/', userRole }: RoleGuardProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const [hasChecked, setHasChecked] = useState(false);
+  const { status } = useAuth();
   const hasRedirectedRef = useRef(false);
 
   useEffect(() => {
-    // Resetar flag quando userRole muda
-    if (userRole === undefined) {
-      hasRedirectedRef.current = false;
-      return;
-    }
+    if (status === 'loading') return;
 
-    setHasChecked(true);
-
-    // Se não houver role, redirecionar para login (apenas uma vez)
     if (!userRole) {
       if (pathname !== '/login' && !hasRedirectedRef.current) {
         hasRedirectedRef.current = true;
@@ -36,10 +36,7 @@ export function RoleGuard({ children, allowedRoles, fallbackRoute = '/', userRol
       return;
     }
 
-    // Verificar acesso baseado em role
     const hasAccess = checkRoleAccess(userRole, allowedRoles);
-    
-    // Se não tiver acesso, redirecionar para fallback (apenas uma vez)
     if (!hasAccess) {
       if (pathname !== fallbackRoute && !hasRedirectedRef.current) {
         hasRedirectedRef.current = true;
@@ -48,29 +45,21 @@ export function RoleGuard({ children, allowedRoles, fallbackRoute = '/', userRol
       return;
     }
 
-    // Se tem acesso, resetar flag para permitir futuros redirects se necessário
     hasRedirectedRef.current = false;
-  }, [userRole, allowedRoles, fallbackRoute, router, pathname]);
+  }, [status, userRole, allowedRoles, fallbackRoute, router, pathname]);
 
-  // Aguardar verificação antes de renderizar
-  if (!hasChecked || userRole === undefined) {
+  if (status === 'loading') {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-gray-600">Carregando...</p>
-        </div>
+        <p className="text-gray-600">Carregando...</p>
       </div>
     );
   }
 
-  if (!userRole) {
-    return null;
-  }
+  if (!userRole) return null;
 
   const hasAccess = checkRoleAccess(userRole, allowedRoles);
-  if (!hasAccess) {
-    return null;
-  }
+  if (!hasAccess) return null;
 
   return <>{children}</>;
 }

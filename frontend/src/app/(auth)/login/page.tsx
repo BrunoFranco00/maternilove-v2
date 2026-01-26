@@ -1,43 +1,34 @@
 'use client';
 
 /**
- * Tela de Login - LOCK RBAC 1
- * Redirecionamento baseado em role e onboarding
+ * Tela de Login
+ * - Renderiza imediatamente (não depende de AuthProvider)
+ * - Loading local apenas durante submit
+ * - Nunca router.replace no mount
  */
 
-import { useState, FormEvent, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, FormEvent } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/providers/ToastProvider';
 import { ErrorState } from '@/components/feedback/ErrorState';
-import { LoadingState } from '@/components/feedback/LoadingState';
 import { t } from '@/lib/i18n';
 
 export default function LoginPage() {
-  const router = useRouter();
   const { login, status } = useAuth();
   const { showToast } = useToast();
-  
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Se já autenticado, o PostLoginRedirect vai redirecionar automaticamente
-  // Não fazer redirect manual aqui para evitar loops
-
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
     setIsLoading(true);
-
     try {
       await login(email, password);
       showToast('Login realizado com sucesso!', 'success');
-      // NÃO fazer redirect manual - deixar o RoleGuard decidir
-      // O AuthProvider já atualizou o status para 'authenticated'
-      // O RoleGuard vai redirecionar automaticamente
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erro ao fazer login';
       setError(errorMessage);
@@ -48,13 +39,13 @@ export default function LoginPage() {
     }
   };
 
-  if (status === 'unknown') {
-    return <LoadingState />;
-  }
-
+  /** Se já autenticado, AuthProvider fará redirect. Mostrar UI mínima (não bloquear). */
   if (status === 'authenticated') {
-    // Mostrar loading enquanto redireciona (RoleGuard vai decidir)
-    return <LoadingState />;
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center p-8 bg-gray-50">
+        <p className="text-gray-600">Redirecionando...</p>
+      </div>
+    );
   }
 
   return (

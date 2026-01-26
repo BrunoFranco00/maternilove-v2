@@ -1,25 +1,23 @@
 'use client';
 
 /**
- * Tela de Register - LOCK RBAC 1
- * Redirecionamento baseado em role e onboarding
+ * Tela de Register
+ * - Renderiza imediatamente (não depende de AuthProvider)
+ * - Loading local apenas durante submit
+ * - Nunca router.replace no mount
  */
 
-import { useState, FormEvent, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, FormEvent } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/providers/ToastProvider';
 import { ErrorState } from '@/components/feedback/ErrorState';
-import { LoadingState } from '@/components/feedback/LoadingState';
 import { t } from '@/lib/i18n';
 import type { RegisterRequest } from '@/types/auth';
 
 export default function RegisterPage() {
-  const router = useRouter();
-  const { register, status, getPostLoginRoute } = useAuth();
+  const { register, status } = useAuth();
   const { showToast } = useToast();
-  
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -27,37 +25,22 @@ export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Redirecionar se já autenticado
-  useEffect(() => {
-    if (status === 'authenticated') {
-      const route = getPostLoginRoute();
-      router.push(route);
-    }
-  }, [status, router, getPostLoginRoute]);
-
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
-
-    // Validação básica
     if (password !== confirmPassword) {
       setError('As senhas não coincidem');
       return;
     }
-
     if (password.length < 6) {
       setError('A senha deve ter no mínimo 6 caracteres');
       return;
     }
-
     setIsLoading(true);
-
     try {
       const payload: RegisterRequest = { name, email, password };
       await register(payload);
       showToast('Conta criada com sucesso!', 'success');
-      const route = getPostLoginRoute();
-      router.push(route);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erro ao criar conta';
       setError(errorMessage);
@@ -68,12 +51,12 @@ export default function RegisterPage() {
     }
   };
 
-  if (status === 'unknown') {
-    return <LoadingState />;
-  }
-
   if (status === 'authenticated') {
-    return null; // Redirecionando
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center p-8 bg-gray-50">
+        <p className="text-gray-600">Redirecionando...</p>
+      </div>
+    );
   }
 
   return (

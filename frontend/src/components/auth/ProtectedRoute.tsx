@@ -21,8 +21,9 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
   const router = useRouter();
 
   useEffect(() => {
+    if (status === 'loading') return;
     if (status === 'unauthenticated') {
-      router.push('/login');
+      router.replace('/login');
       return;
     }
 
@@ -50,7 +51,7 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
     }
   }, [status, user, isOnboardingCompleted, router, requiredRole]);
 
-  if (status === 'unknown') {
+  if (status === 'loading') {
     return <LoadingState />;
   }
 

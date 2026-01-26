@@ -48,4 +48,4 @@ export interface LogoutRequest {
   refreshToken: string;
 }
 
-export type AuthStatus = 'unknown' | 'authenticated' | 'unauthenticated';
+export type AuthStatus = 'loading' | 'authenticated' | 'unauthenticated';
