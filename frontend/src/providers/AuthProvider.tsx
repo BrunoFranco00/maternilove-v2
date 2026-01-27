@@ -9,10 +9,10 @@
  */
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import * as authService from '@/services/authService';
 import { getOnboardingRoute, getDefaultRoute, requiresOnboarding, isAdmin } from '@/utils/rbac';
-import { normalizeRole } from '@/lib/auth/roles';
+import { normalizeRole } from '@/lib/normalizeRole';
 import type {
   AuthStatus,
   User,
@@ -240,7 +240,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
         .find((row) => row.startsWith('user_role='))
         ?.split('=')[1];
 
-      if (!storedRefreshToken || !storedUser || !userRoleCookie) {
+      const normalizedCookieRole = normalizeRole(userRoleCookie);
+
+      if (!storedRefreshToken || !storedUser || !normalizedCookieRole) {
         setStatus('unauthenticated');
         setAuthReady(true);
         return;
@@ -250,7 +252,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
         const result = await authService.refresh(request);
         saveTokens(result.accessToken, result.refreshToken);
         const userData = JSON.parse(storedUser) as User;
-        saveUser(userData);
+        // Garantir que o estado global sempre use role normalizada
+        const normalizedUser: User = { ...userData, role: normalizedCookieRole };
+        localStorage.setItem('user', JSON.stringify(normalizedUser));
+        setUser(normalizedUser);
         checkOnboardingStatus();
         setStatus('authenticated');
         setAuthReady(true);

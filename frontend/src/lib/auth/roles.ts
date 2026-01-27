@@ -1,4 +1,7 @@
-export type UserRole = 
+import type { NormalizedRole } from '@/lib/normalizeRole';
+import { normalizeRole as normalizeRoleUtil } from '@/lib/normalizeRole';
+
+export type UserRole =
   | 'USER'
   | 'MOTHER'
   | 'PROFESSIONAL'
@@ -23,7 +26,7 @@ export function hasMinimumRole(userRole: UserRole, minimumRole: UserRole): boole
   return ROLE_HIERARCHY[userRole] >= ROLE_HIERARCHY[minimumRole];
 }
 
-export function normalizeRole(role: string): UserRole {
-  const upperRole = role.toUpperCase() as UserRole;
-  return upperRole in ROLE_HIERARCHY ? upperRole : 'USER';
+export function normalizeRole(role: string): NormalizedRole {
+  return normalizeRoleUtil(role) ?? 'USER';
 }
+

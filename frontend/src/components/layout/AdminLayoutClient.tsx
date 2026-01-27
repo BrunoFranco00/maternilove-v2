@@ -2,7 +2,6 @@
 
 import { RoleGuard } from '@/components/guards/RoleGuard';
 import { useAuth } from '@/hooks/useAuth';
-import { UserRole, normalizeRole } from '@/lib/auth/roles';
 
 export function AdminLayoutClient({
   children,
@@ -10,10 +9,9 @@ export function AdminLayoutClient({
   children: React.ReactNode;
 }) {
   const { user } = useAuth();
-  const userRole = user?.role ? (normalizeRole(user.role) as UserRole) : undefined;
 
   return (
-    <RoleGuard allowedRoles={['ADMIN', 'SUPER_ADMIN']} userRole={userRole}>
+    <RoleGuard allowedRoles={['ADMIN', 'SUPER_ADMIN']} userRole={user?.role}>
       <div className="min-h-screen bg-gray-50">
         <nav className="bg-white shadow-sm border-b">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

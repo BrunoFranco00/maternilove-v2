@@ -13,11 +13,9 @@ export default function UserLayout({
   return (
     <RoleGuard
       allowedRoles={['USER', 'MOTHER', 'PROFESSIONAL', 'COMPANY']}
-      userRole={user?.role as any}
+      userRole={user?.role}
     >
-      <div className="min-h-screen bg-gray-50">
-        {children}
-      </div>
+      <div className="min-h-screen bg-gray-50">{children}</div>
     </RoleGuard>
   );
 }

@@ -8,6 +8,7 @@
 import { useRouter } from 'next/navigation';
 import { t } from '@/lib/i18n';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
+import { RoleGuard } from '@/components/guards/RoleGuard';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/providers/ToastProvider';
 
@@ -77,9 +78,13 @@ function DashboardContent() {
 }
 
 export default function DashboardPage() {
+  const { user } = useAuth();
+
   return (
     <ProtectedRoute>
-      <DashboardContent />
+      <RoleGuard allowedRoles={['USER', 'ADMIN', 'SUPER_ADMIN']} userRole={user?.role}>
+        <DashboardContent />
+      </RoleGuard>
     </ProtectedRoute>
   );
 }

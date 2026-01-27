@@ -2,23 +2,25 @@
 
 import { ReactNode } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { UserRole } from '@/lib/auth/roles';
-import { checkRoleAccess } from '@/lib/auth/permissions';
+import { normalizeRole, type NormalizedRole } from '@/lib/normalizeRole';
 
 interface RoleGuardProps {
   children: ReactNode;
-  allowedRoles: UserRole[];
-  fallbackRoute?: string;
-  userRole?: UserRole;
+  /** Roles permitidas para a rota (já normalizadas ou em qualquer casing). Opcional. */
+  allowedRoles?: NormalizedRole[];
+  /** Role atual do usuário (string crua do backend / estado). */
+  userRole?: string;
 }
 
 /**
- * RoleGuard: bloqueia acesso por role.
- * NUNCA redireciona - apenas bloqueia renderização.
- * Se user inexistente → render null.
- * Se role inválida → render AccessDenied.
+ * RoleGuard: bloqueia acesso por role, sem redirecionar.
+ *
+ * Regras:
+ * - SUPER_ADMIN sempre tem acesso total.
+ * - Se allowedRoles não existir → permitir.
+ * - Se role normalizada não estiver em allowedRoles → bloquear.
  */
-export function RoleGuard({ children, allowedRoles, fallbackRoute = '/', userRole }: RoleGuardProps) {
+export function RoleGuard({ children, allowedRoles, userRole }: RoleGuardProps) {
   const { status } = useAuth();
 
   if (status === 'loading') {
@@ -29,7 +31,9 @@ export function RoleGuard({ children, allowedRoles, fallbackRoute = '/', userRol
     );
   }
 
-  if (!userRole) {
+  const normalized = normalizeRole(userRole);
+
+  if (!normalized) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -39,7 +43,19 @@ export function RoleGuard({ children, allowedRoles, fallbackRoute = '/', userRol
     );
   }
 
-  const hasAccess = checkRoleAccess(userRole, allowedRoles);
+  // SUPER_ADMIN sempre tem acesso total
+  if (normalized === 'SUPER_ADMIN') {
+    return <>{children}</>;
+  }
+
+  // Se não houver allowedRoles, permitir
+  if (!allowedRoles || allowedRoles.length === 0) {
+    return <>{children}</>;
+  }
+
+  const normalizedAllowed = allowedRoles.map((r) => normalizeRole(r)!).filter(Boolean) as NormalizedRole[];
+  const hasAccess = normalizedAllowed.includes(normalized);
+
   if (!hasAccess) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -52,3 +68,4 @@ export function RoleGuard({ children, allowedRoles, fallbackRoute = '/', userRol
 
   return <>{children}</>;
 }
+

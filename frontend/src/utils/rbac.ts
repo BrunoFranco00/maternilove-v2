@@ -4,6 +4,8 @@
  * Frontend-only, não modifica backend
  */
 
+import { normalizeRole, type NormalizedRole } from '@/lib/normalizeRole';
+
 export type UserRole = 'USER' | 'MOTHER' | 'PROFESSIONAL' | 'COMPANY' | 'ADMIN' | 'SUPER_ADMIN';
 
 export interface RolePermissions {
@@ -54,10 +56,12 @@ const ROLE_PERMISSIONS: Record<UserRole, RolePermissions> = {
 
 /**
  * Obter permissões de um role
+ * Sempre usa role normalizado (case-safe).
  */
 export function getRolePermissions(role: string): RolePermissions {
-  const normalizedRole = role.toUpperCase() as UserRole;
-  return ROLE_PERMISSIONS[normalizedRole] || ROLE_PERMISSIONS.USER;
+  const normalized = normalizeRole(role) as NormalizedRole | null;
+  const key = (normalized as UserRole) ?? 'USER';
+  return ROLE_PERMISSIONS[key] || ROLE_PERMISSIONS.USER;
 }
 
 /**
@@ -92,6 +96,6 @@ export function getDefaultRoute(role: string): string {
  * Verificar se role é admin
  */
 export function isAdmin(role: string): boolean {
-  const normalizedRole = role.toUpperCase();
-  return normalizedRole === 'ADMIN' || normalizedRole === 'SUPER_ADMIN';
+  const normalized = normalizeRole(role);
+  return normalized === 'ADMIN' || normalized === 'SUPER_ADMIN';
 }
