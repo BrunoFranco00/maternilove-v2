@@ -8,14 +8,18 @@
  */
 
 import { useState, FormEvent } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/providers/ToastProvider';
 import { ErrorState } from '@/components/feedback/ErrorState';
+import { getDefaultRoute, isAdmin } from '@/utils/rbac';
+import { normalizeRole } from '@/lib/auth/roles';
 import { t } from '@/lib/i18n';
 import type { RegisterRequest } from '@/types/auth';
 
 export default function RegisterPage() {
+  const router = useRouter();
   const { register, status } = useAuth();
   const { showToast } = useToast();
   const [name, setName] = useState('');
@@ -41,6 +45,27 @@ export default function RegisterPage() {
       const payload: RegisterRequest = { name, email, password };
       await register(payload);
       showToast('Conta criada com sucesso!', 'success');
+      
+      // Redirect explícito após registro bem-sucedido
+      setTimeout(() => {
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+          try {
+            const currentUser = JSON.parse(storedUser);
+            if (currentUser.role) {
+              const normalizedRole = normalizeRole(currentUser.role);
+              const targetRoute = isAdmin(normalizedRole) 
+                ? '/admin/overview' 
+                : getDefaultRoute(normalizedRole);
+              router.replace(targetRoute);
+              return;
+            }
+          } catch {
+            // Fallback
+          }
+        }
+        router.replace('/dashboard');
+      }, 100);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erro ao criar conta';
       setError(errorMessage);

@@ -12,7 +12,6 @@ import React, { createContext, useContext, useState, useEffect, ReactNode, useCa
 import { useRouter, usePathname } from 'next/navigation';
 import * as authService from '@/services/authService';
 import { getOnboardingRoute, getDefaultRoute, requiresOnboarding, isAdmin } from '@/utils/rbac';
-import { isPublicRoute } from '@/lib/auth/constants';
 import { normalizeRole } from '@/lib/auth/roles';
 import type {
   AuthStatus,
@@ -29,6 +28,7 @@ interface AuthContextValue {
   status: AuthStatus;
   user: User | null;
   isOnboardingCompleted: boolean;
+  authReady: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (data: RegisterRequest) => Promise<void>;
   logout: () => Promise<void>;
@@ -55,11 +55,10 @@ const ONBOARDING_STORAGE_KEY = 'onboardingCompleted';
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const router = useRouter();
-  const pathname = usePathname();
   const [status, setStatus] = useState<AuthStatus>('loading');
   const [user, setUser] = useState<User | null>(null);
   const [isOnboardingCompleted, setIsOnboardingCompleted] = useState<boolean>(false);
-  const hasRedirectedRef = useRef(false);
+  const [authReady, setAuthReady] = useState<boolean>(false);
 
   const saveTokens = useCallback((accessToken: string, refreshTokenValue: string) => {
     if (typeof window === 'undefined') return;
@@ -222,7 +221,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     clearTokens();
     clearUser();
     setStatus('unauthenticated');
-    hasRedirectedRef.current = false;
+    setAuthReady(true);
     router.replace('/login');
   }, [clearTokens, clearUser, router]);
 
@@ -230,13 +229,20 @@ export function AuthProvider({ children }: AuthProviderProps) {
   useEffect(() => {
     if (typeof window === 'undefined') {
       setStatus('unauthenticated');
+      setAuthReady(true);
       return;
     }
     const init = async () => {
       const storedRefreshToken = localStorage.getItem('refreshToken');
       const storedUser = localStorage.getItem('user');
-      if (!storedRefreshToken || !storedUser) {
+      const userRoleCookie = document.cookie
+        .split('; ')
+        .find((row) => row.startsWith('user_role='))
+        ?.split('=')[1];
+
+      if (!storedRefreshToken || !storedUser || !userRoleCookie) {
         setStatus('unauthenticated');
+        setAuthReady(true);
         return;
       }
       try {
@@ -247,37 +253,23 @@ export function AuthProvider({ children }: AuthProviderProps) {
         saveUser(userData);
         checkOnboardingStatus();
         setStatus('authenticated');
+        setAuthReady(true);
       } catch {
         clearTokens();
         clearUser();
         setStatus('unauthenticated');
+        setAuthReady(true);
       }
     };
     init();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  /**
-   * Redirect centralizado: APENAS quando status definitivo.
-   * NUNCA redirect enquanto status === 'loading'.
-   * Rotas públicas: nunca redirecionar para fora; permitir render estável.
-   * Se autenticado em /login ou /register → redirect UMA vez para getPostLoginRoute().
-   */
-  useEffect(() => {
-    if (status === 'loading') return;
-    if (!isPublicRoute(pathname)) return;
-    if (status !== 'authenticated' || !user) return;
-    const target = getPostLoginRoute();
-    if (pathname === target) return;
-    if (hasRedirectedRef.current) return;
-    hasRedirectedRef.current = true;
-    router.replace(target);
-  }, [status, user, pathname, getPostLoginRoute, router]);
-
   const value: AuthContextValue = {
     status,
     user,
     isOnboardingCompleted,
+    authReady,
     login,
     register,
     logout,

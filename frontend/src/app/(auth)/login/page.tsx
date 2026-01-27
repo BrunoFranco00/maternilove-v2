@@ -8,14 +8,18 @@
  */
 
 import { useState, FormEvent } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/providers/ToastProvider';
 import { ErrorState } from '@/components/feedback/ErrorState';
+import { getDefaultRoute, isAdmin } from '@/utils/rbac';
+import { normalizeRole } from '@/lib/auth/roles';
 import { t } from '@/lib/i18n';
 
 export default function LoginPage() {
-  const { login, status } = useAuth();
+  const router = useRouter();
+  const { login, status, user } = useAuth();
   const { showToast } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -29,6 +33,28 @@ export default function LoginPage() {
     try {
       await login(email, password);
       showToast('Login realizado com sucesso!', 'success');
+      
+      // Redirect explícito após login bem-sucedido
+      // Ler user do localStorage após login (cookie já foi setado pelo AuthProvider)
+      setTimeout(() => {
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+          try {
+            const currentUser = JSON.parse(storedUser);
+            if (currentUser.role) {
+              const normalizedRole = normalizeRole(currentUser.role);
+              const targetRoute = isAdmin(normalizedRole) 
+                ? '/admin/overview' 
+                : getDefaultRoute(normalizedRole);
+              router.replace(targetRoute);
+              return;
+            }
+          } catch {
+            // Fallback
+          }
+        }
+        router.replace('/dashboard');
+      }, 100);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erro ao fazer login';
       setError(errorMessage);
@@ -38,15 +64,6 @@ export default function LoginPage() {
       setIsLoading(false);
     }
   };
-
-  /** Se já autenticado, AuthProvider fará redirect. Mostrar UI mínima (não bloquear). */
-  if (status === 'authenticated') {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-8 bg-gray-50">
-        <p className="text-gray-600">Redirecionando...</p>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-8 bg-gray-50">

@@ -1,7 +1,6 @@
 'use client';
 
-import { useEffect, ReactNode, useState, useRef } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { ReactNode } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { UserRole } from '@/lib/auth/roles';
 import { checkRoleAccess } from '@/lib/auth/permissions';
@@ -15,38 +14,12 @@ interface RoleGuardProps {
 
 /**
  * RoleGuard: bloqueia acesso por role.
- * NUNCA redirect enquanto status === 'loading'.
- * router.replace apenas UMA vez por transição.
- * UI nunca fica presa em "Carregando...": loading só enquanto status === 'loading'.
+ * NUNCA redireciona - apenas bloqueia renderização.
+ * Se user inexistente → render null.
+ * Se role inválida → render AccessDenied.
  */
 export function RoleGuard({ children, allowedRoles, fallbackRoute = '/', userRole }: RoleGuardProps) {
-  const router = useRouter();
-  const pathname = usePathname();
   const { status } = useAuth();
-  const hasRedirectedRef = useRef(false);
-
-  useEffect(() => {
-    if (status === 'loading') return;
-
-    if (!userRole) {
-      if (pathname !== '/login' && !hasRedirectedRef.current) {
-        hasRedirectedRef.current = true;
-        router.replace('/login');
-      }
-      return;
-    }
-
-    const hasAccess = checkRoleAccess(userRole, allowedRoles);
-    if (!hasAccess) {
-      if (pathname !== fallbackRoute && !hasRedirectedRef.current) {
-        hasRedirectedRef.current = true;
-        router.replace(fallbackRoute);
-      }
-      return;
-    }
-
-    hasRedirectedRef.current = false;
-  }, [status, userRole, allowedRoles, fallbackRoute, router, pathname]);
 
   if (status === 'loading') {
     return (
@@ -56,10 +29,26 @@ export function RoleGuard({ children, allowedRoles, fallbackRoute = '/', userRol
     );
   }
 
-  if (!userRole) return null;
+  if (!userRole) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-600">Acesso negado. Faça login para continuar.</p>
+        </div>
+      </div>
+    );
+  }
 
   const hasAccess = checkRoleAccess(userRole, allowedRoles);
-  if (!hasAccess) return null;
+  if (!hasAccess) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-600">Você não tem permissão para acessar esta página.</p>
+        </div>
+      </div>
+    );
+  }
 
   return <>{children}</>;
 }
