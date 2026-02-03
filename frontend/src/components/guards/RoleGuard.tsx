@@ -31,9 +31,7 @@ export function RoleGuard({ children, allowedRoles, userRole }: RoleGuardProps) 
     );
   }
 
-  const normalized = normalizeRole(userRole);
-
-  if (!normalized) {
+  if (!userRole) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -42,6 +40,7 @@ export function RoleGuard({ children, allowedRoles, userRole }: RoleGuardProps) 
       </div>
     );
   }
+  const normalized = normalizeRole(userRole);
 
   // SUPER_ADMIN sempre tem acesso total
   if (normalized === 'SUPER_ADMIN') {
@@ -53,7 +52,7 @@ export function RoleGuard({ children, allowedRoles, userRole }: RoleGuardProps) 
     return <>{children}</>;
   }
 
-  const normalizedAllowed = allowedRoles.map((r) => normalizeRole(r)!).filter(Boolean) as NormalizedRole[];
+  const normalizedAllowed = allowedRoles.map((r) => normalizeRole(r));
   const hasAccess = normalizedAllowed.includes(normalized);
 
   if (!hasAccess) {

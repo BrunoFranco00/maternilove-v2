@@ -27,6 +27,6 @@ export function hasMinimumRole(userRole: UserRole, minimumRole: UserRole): boole
 }
 
 export function normalizeRole(role: string): NormalizedRole {
-  return normalizeRoleUtil(role) ?? 'USER';
+  return normalizeRoleUtil(role);
 }
 

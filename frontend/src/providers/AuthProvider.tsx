@@ -240,13 +240,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
         .find((row) => row.startsWith('user_role='))
         ?.split('=')[1];
 
-      const normalizedCookieRole = normalizeRole(userRoleCookie);
-
-      if (!storedRefreshToken || !storedUser || !normalizedCookieRole) {
+      if (!storedRefreshToken || !storedUser || !userRoleCookie) {
         setStatus('unauthenticated');
         setAuthReady(true);
         return;
       }
+      const normalizedCookieRole = normalizeRole(userRoleCookie);
       try {
         const request: RefreshRequest = { refreshToken: storedRefreshToken };
         const result = await authService.refresh(request);

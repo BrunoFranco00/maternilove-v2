@@ -59,8 +59,8 @@ const ROLE_PERMISSIONS: Record<UserRole, RolePermissions> = {
  * Sempre usa role normalizado (case-safe).
  */
 export function getRolePermissions(role: string): RolePermissions {
-  const normalized = normalizeRole(role) as NormalizedRole | null;
-  const key = (normalized as UserRole) ?? 'USER';
+  const normalized = normalizeRole(role) as NormalizedRole;
+  const key = normalized as UserRole;
   return ROLE_PERMISSIONS[key] || ROLE_PERMISSIONS.USER;
 }
 

@@ -2,11 +2,12 @@
  * Tipos de autenticação
  */
 
+import type { NormalizedRole } from '@/lib/normalizeRole';
 export interface User {
   id: string;
   email: string;
   name: string;
-  role: string;
+  role: NormalizedRole;
 }
 
 export interface AuthTokens {
