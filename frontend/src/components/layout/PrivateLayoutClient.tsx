@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
+import { getDefaultRoute } from '@/utils/rbac';
 import { t } from '@/lib/i18n';
 
 export function PrivateLayoutClient({
@@ -12,6 +13,7 @@ export function PrivateLayoutClient({
 }) {
   const router = useRouter();
   const { logout, user } = useAuth();
+  const homeHref = user ? getDefaultRoute(user.role) : '/check-in';
 
   const handleLogout = async () => {
     await logout();
@@ -24,7 +26,7 @@ export function PrivateLayoutClient({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center">
-              <Link href="/dashboard" className="text-xl font-bold text-gray-900">
+              <Link href={homeHref} className="text-xl font-bold text-gray-900">
                 MaterniLove
               </Link>
             </div>
@@ -33,7 +35,7 @@ export function PrivateLayoutClient({
                 <span className="text-sm text-gray-600">{user.name}</span>
               )}
               <Link
-                href="/dashboard"
+                href={homeHref}
                 className="text-gray-700 hover:text-gray-900"
               >
                 {t('nav.dashboard')}

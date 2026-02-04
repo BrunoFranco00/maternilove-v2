@@ -43,8 +43,8 @@ export default function LoginPage() {
             const currentUser = JSON.parse(storedUser);
             if (currentUser.role) {
               const normalizedRole = normalizeRole(currentUser.role);
-              const targetRoute = isAdmin(normalizedRole) 
-                ? '/admin/overview' 
+              const targetRoute = isAdmin(normalizedRole)
+                ? '/admin'
                 : getDefaultRoute(normalizedRole);
               router.replace(targetRoute);
               return;
@@ -53,7 +53,7 @@ export default function LoginPage() {
             // Fallback
           }
         }
-        router.replace('/dashboard');
+        router.replace('/check-in');
       }, 100);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erro ao fazer login';

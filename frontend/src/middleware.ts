@@ -1,37 +1,48 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { PUBLIC_ROUTES } from '@/lib/auth/constants';
 
-/** Rotas que não exigem autenticação (inclui / para homepage) */
-const ALL_PUBLIC = ['/', ...PUBLIC_ROUTES];
+/** Rotas públicas (não exigem autenticação) */
+const ALL_PUBLIC = ['/', '/login', '/register'];
 
-/** Rotas privadas que exigem autenticação */
-const PRIVATE_ROUTES = ['/admin', '/dashboard'];
+/** Roles que podem acessar /admin/* */
+const ADMIN_ROLES = ['ADMIN', 'SUPER_ADMIN'];
+
+function isAdminRole(role: string | undefined): boolean {
+  if (!role) return false;
+  const upper = role.toUpperCase();
+  return ADMIN_ROLES.includes(upper);
+}
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Permitir APIs e assets do Next.js
   if (pathname.startsWith('/api') || pathname.startsWith('/_next')) {
     return NextResponse.next();
   }
 
-  // Rotas públicas sempre permitidas
   const isPublic = ALL_PUBLIC.some((r) => pathname === r || pathname.startsWith(`${r}/`));
   if (isPublic) {
     return NextResponse.next();
   }
 
-  // Proteger SOMENTE rotas privadas
-  const isPrivate = PRIVATE_ROUTES.some((r) => pathname.startsWith(r));
-  if (isPrivate) {
-    const userRoleCookie = request.cookies.get('user_role')?.value;
-    if (!userRoleCookie) {
+  const userRole = request.cookies.get('user_role')?.value;
+
+  // /admin/*: apenas ADMIN ou SUPER_ADMIN
+  if (pathname.startsWith('/admin')) {
+    if (!userRole) {
       return NextResponse.redirect(new URL('/login', request.url));
     }
+    if (!isAdminRole(userRole)) {
+      return NextResponse.redirect(new URL('/check-in', request.url));
+    }
+    return NextResponse.next();
   }
 
-  // Todas as outras rotas passam (middleware não decide destino)
+  // Demais rotas privadas: exigir autenticação
+  if (!userRole) {
+    return NextResponse.redirect(new URL('/login', request.url));
+  }
+
   return NextResponse.next();
 }
 
