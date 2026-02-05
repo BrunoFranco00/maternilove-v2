@@ -1,20 +1,16 @@
-'use client';
+"use client";
 
-import { ErrorState } from '@/components/feedback/ErrorState';
-import { t } from '@/lib/i18n';
-
-export default function Error({
+export default function GlobalError({
   error,
-  reset,
 }: {
   error: Error & { digest?: string };
-  reset: () => void;
 }) {
   return (
-    <ErrorState
-      title={t('error.generic')}
-      description={t('error.generic.description')}
-      onRetry={reset}
-    />
+    <html>
+      <body style={{ padding: 40 }}>
+        <h1>Erro detectado</h1>
+        <pre>{error.message}</pre>
+      </body>
+    </html>
   );
 }
