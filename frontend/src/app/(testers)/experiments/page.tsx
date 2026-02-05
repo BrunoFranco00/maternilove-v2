@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 export default function ExperimentsPage() {
   return (
     <div className="p-4 md:p-8">
