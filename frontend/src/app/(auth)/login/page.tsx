@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * Tela de Login
  * - Renderiza imediatamente (não depende de AuthProvider)

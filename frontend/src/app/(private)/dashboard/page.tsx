@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * Dashboard - LOCK RBAC 1
  * Rota privada protegida com exibição de role
