@@ -3,6 +3,8 @@ import { Providers } from '@/providers/Providers';
 import { ErrorBoundary } from '@/components/guards/ErrorBoundary';
 import '../styles/globals.css';
 
+/** AuthProvider é único e global: apenas em Providers (abaixo), envolvendo todo o app. */
+
 export const metadata: Metadata = {
   title: 'MaterniLove',
   description: 'Sua jornada de maternidade começa aqui',

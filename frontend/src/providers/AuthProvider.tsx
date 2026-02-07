@@ -39,10 +39,27 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
+/** Estado neutro quando useAuth é chamado fora do AuthProvider (apenas PROD) */
+const NEUTRAL_AUTH_VALUE: AuthContextValue = {
+  status: 'unauthenticated',
+  user: null,
+  isOnboardingCompleted: false,
+  authReady: true,
+  login: async () => {},
+  register: async () => {},
+  logout: async () => {},
+  refresh: async () => {},
+  completeOnboarding: () => {},
+  getPostLoginRoute: () => '/login',
+};
+
 export function useAuth() {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used within AuthProvider');
+    if (process.env.NODE_ENV === 'development') {
+      throw new Error('useAuth must be used within AuthProvider');
+    }
+    return NEUTRAL_AUTH_VALUE;
   }
   return context;
 }
