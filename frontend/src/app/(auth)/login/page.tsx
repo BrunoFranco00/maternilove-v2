@@ -33,11 +33,13 @@ export default function LoginPage() {
     setError(null);
     setIsLoading(true);
     try {
-      await login(email, password);
+      const result = await login(email, password);
+      if (!result.success) {
+        setError(result.error);
+        showToast(result.error, 'error');
+        return;
+      }
       showToast('Login realizado com sucesso!', 'success');
-      
-      // Redirect explícito após login bem-sucedido
-      // Ler user do localStorage após login (cookie já foi setado pelo AuthProvider)
       setTimeout(() => {
         const storedUser = localStorage.getItem('user');
         if (storedUser) {
@@ -61,7 +63,6 @@ export default function LoginPage() {
       const errorMessage = err instanceof Error ? err.message : 'Erro ao fazer login';
       setError(errorMessage);
       showToast(errorMessage, 'error');
-      console.error('Erro no login:', err);
     } finally {
       setIsLoading(false);
     }

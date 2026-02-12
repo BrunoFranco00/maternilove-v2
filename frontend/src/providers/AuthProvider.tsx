@@ -24,13 +24,15 @@ import type {
   RegisterResponse,
 } from '@/types/auth';
 
+export type AuthResult = { success: true } | { success: false; error: string };
+
 interface AuthContextValue {
   status: AuthStatus;
   user: User | null;
   isOnboardingCompleted: boolean;
   authReady: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  register: (data: RegisterRequest) => Promise<void>;
+  login: (email: string, password: string) => Promise<AuthResult>;
+  register: (data: RegisterRequest) => Promise<AuthResult>;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
   completeOnboarding: () => void;
@@ -45,8 +47,8 @@ const NEUTRAL_AUTH_VALUE: AuthContextValue = {
   user: null,
   isOnboardingCompleted: false,
   authReady: true,
-  login: async () => {},
-  register: async () => {},
+  login: async () => ({ success: false, error: 'Provider não disponível' }),
+  register: async () => ({ success: false, error: 'Provider não disponível' }),
   logout: async () => {},
   refresh: async () => {},
   completeOnboarding: () => {},
@@ -208,41 +210,69 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, [saveTokens, saveUser, clearTokens, clearUser, checkOnboardingStatus]);
 
-  const login = useCallback(async (email: string, password: string): Promise<void> => {
-    const request: LoginRequest = { email, password };
-    const result: LoginResponse = await authService.login(request);
-    saveTokens(result.tokens.accessToken, result.tokens.refreshToken);
-    saveUser(result.user);
-    checkOnboardingStatus();
-    setStatus('authenticated');
-  }, [saveTokens, saveUser, checkOnboardingStatus]);
+  const login = useCallback(async (email: string, password: string): Promise<AuthResult> => {
+    try {
+      const request: LoginRequest = { email, password };
+      const result: LoginResponse = await authService.login(request);
+      saveTokens(result.tokens.accessToken, result.tokens.refreshToken);
+      saveUser(result.user);
+      checkOnboardingStatus();
+      setStatus('authenticated');
+      return { success: true };
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Erro ao fazer login';
+      console.error('Login failed:', err);
+      clearTokens();
+      clearUser();
+      setStatus('unauthenticated');
+      return { success: false, error: errorMessage };
+    }
+  }, [saveTokens, saveUser, clearTokens, clearUser, checkOnboardingStatus]);
 
-  const register = useCallback(async (data: RegisterRequest): Promise<void> => {
-    const result: RegisterResponse = await authService.register(data);
-    saveTokens(result.tokens.accessToken, result.tokens.refreshToken);
-    saveUser(result.user);
-    setIsOnboardingCompleted(false);
-    setStatus('authenticated');
-  }, [saveTokens, saveUser]);
+  const register = useCallback(async (data: RegisterRequest): Promise<AuthResult> => {
+    try {
+      const result: RegisterResponse = await authService.register(data);
+      saveTokens(result.tokens.accessToken, result.tokens.refreshToken);
+      saveUser(result.user);
+      setIsOnboardingCompleted(false);
+      setStatus('authenticated');
+      return { success: true };
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Erro ao criar conta';
+      console.error('Register failed:', err);
+      clearTokens();
+      clearUser();
+      setStatus('unauthenticated');
+      return { success: false, error: errorMessage };
+    }
+  }, [saveTokens, saveUser, clearTokens, clearUser]);
 
   const logout = useCallback(async (): Promise<void> => {
-    if (typeof window === 'undefined') return;
-    const storedRefreshToken = localStorage.getItem('refreshToken');
-    if (storedRefreshToken) {
-      try {
-        await authService.logout({ refreshToken: storedRefreshToken });
-      } catch (e) {
-        console.error('Error on logout:', e);
+    try {
+      if (typeof window === 'undefined') return;
+      const storedRefreshToken = localStorage.getItem('refreshToken');
+      if (storedRefreshToken) {
+        try {
+          await authService.logout({ refreshToken: storedRefreshToken });
+        } catch (e) {
+          console.error('Error on logout:', e);
+        }
       }
+      clearTokens();
+      clearUser();
+      setStatus('unauthenticated');
+      setAuthReady(true);
+      router.replace('/login');
+    } catch (e) {
+      console.error('Logout error:', e);
+      clearTokens();
+      clearUser();
+      setStatus('unauthenticated');
+      setAuthReady(true);
     }
-    clearTokens();
-    clearUser();
-    setStatus('unauthenticated');
-    setAuthReady(true);
-    router.replace('/login');
   }, [clearTokens, clearUser, router]);
 
-  /** Inicialização: validar token no backend (refresh). Status inicia 'loading'. */
+  /** Inicialização: validar token no backend (refresh). Status inicia 'loading'. Nunca lança. */
   useEffect(() => {
     if (typeof window === 'undefined') {
       setStatus('unauthenticated');
@@ -250,25 +280,24 @@ export function AuthProvider({ children }: AuthProviderProps) {
       return;
     }
     const init = async () => {
-      const storedRefreshToken = localStorage.getItem('refreshToken');
-      const storedUser = localStorage.getItem('user');
-      const userRoleCookie = document.cookie
-        .split('; ')
-        .find((row) => row.startsWith('user_role='))
-        ?.split('=')[1];
-
-      if (!storedRefreshToken || !storedUser || !userRoleCookie) {
-        setStatus('unauthenticated');
-        setAuthReady(true);
-        return;
-      }
-      const normalizedCookieRole = normalizeRole(userRoleCookie);
       try {
+        const storedRefreshToken = localStorage.getItem('refreshToken');
+        const storedUser = localStorage.getItem('user');
+        const userRoleCookie = document.cookie
+          .split('; ')
+          .find((row) => row.startsWith('user_role='))
+          ?.split('=')[1];
+
+        if (!storedRefreshToken || !storedUser || !userRoleCookie) {
+          setStatus('unauthenticated');
+          setAuthReady(true);
+          return;
+        }
+        const normalizedCookieRole = normalizeRole(userRoleCookie);
         const request: RefreshRequest = { refreshToken: storedRefreshToken };
         const result = await authService.refresh(request);
         saveTokens(result.accessToken, result.refreshToken);
         const userData = JSON.parse(storedUser) as User;
-        // Garantir que o estado global sempre use role normalizada
         const normalizedUser: User = { ...userData, role: normalizedCookieRole };
         localStorage.setItem('user', JSON.stringify(normalizedUser));
         setUser(normalizedUser);
@@ -282,7 +311,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setAuthReady(true);
       }
     };
-    init();
+    init().catch(() => {
+      setStatus('unauthenticated');
+      setAuthReady(true);
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

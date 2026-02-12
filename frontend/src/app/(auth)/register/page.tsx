@@ -45,10 +45,13 @@ export default function RegisterPage() {
     setIsLoading(true);
     try {
       const payload: RegisterRequest = { name, email, password };
-      await register(payload);
+      const result = await register(payload);
+      if (!result.success) {
+        setError(result.error);
+        showToast(result.error, 'error');
+        return;
+      }
       showToast('Conta criada com sucesso!', 'success');
-      
-      // Redirect explícito após registro bem-sucedido
       setTimeout(() => {
         const storedUser = localStorage.getItem('user');
         if (storedUser) {
@@ -72,7 +75,6 @@ export default function RegisterPage() {
       const errorMessage = err instanceof Error ? err.message : 'Erro ao criar conta';
       setError(errorMessage);
       showToast(errorMessage, 'error');
-      console.error('Erro no registro:', err);
     } finally {
       setIsLoading(false);
     }
