@@ -15,7 +15,7 @@ export interface FeatureFlag {
 export const DEFAULT_FEATURE_FLAGS: Record<FeatureFlagKey, FeatureFlag> = {
   CORE_EMOTIONAL_ENABLED: {
     key: 'CORE_EMOTIONAL_ENABLED',
-    enabled: false,
+    enabled: true,
     description: 'Habilita o módulo core-emotional (check-in + relief)',
   },
   MARKETPLACE_ENABLED: {
