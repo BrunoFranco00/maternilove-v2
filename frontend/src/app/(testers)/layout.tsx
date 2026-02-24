@@ -1,17 +1,17 @@
 'use client';
 
 import { RoleGuard } from '@/components/guards/RoleGuard';
-import { useAuth } from '@/hooks/useAuth';
 
+/**
+ * TestersLayout - AUTH DESABILITADO PARA TESTE: sem useAuth.
+ */
 export default function TestersLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { user } = useAuth();
-
   return (
-    <RoleGuard allowedRoles={['SUPER_ADMIN']} userRole={user?.role}>
+    <RoleGuard>
       <div className="min-h-screen bg-gray-50">{children}</div>
     </RoleGuard>
   );

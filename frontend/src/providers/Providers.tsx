@@ -9,7 +9,7 @@
 import React, { ReactNode } from 'react';
 import { ToastProvider } from './ToastProvider';
 import { ApiProvider } from './ApiProvider';
-import { AuthProvider } from './AuthProvider';
+// import { AuthProvider } from './AuthProvider';
 
 interface ProvidersProps {
   children: ReactNode;
@@ -19,7 +19,9 @@ export function Providers({ children }: ProvidersProps) {
   return (
     <ToastProvider>
       <ApiProvider>
-        <AuthProvider>{children}</AuthProvider>
+        {/* AuthProvider desabilitado temporariamente para teste */}
+        {/* <AuthProvider>{children}</AuthProvider> */}
+        {children}
       </ApiProvider>
     </ToastProvider>
   );
