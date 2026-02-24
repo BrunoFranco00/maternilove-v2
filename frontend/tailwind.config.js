@@ -14,6 +14,8 @@ export default {
           primary: "rgb(var(--color-brand-primary) / <alpha-value>)",
           accent: "rgb(var(--color-brand-accent) / <alpha-value>)",
           muted: "rgb(var(--color-brand-muted) / <alpha-value>)",
+          "rosa-light": "rgb(var(--color-brand-rosa-light) / <alpha-value>)",
+          "rosa-soft": "rgb(var(--color-brand-rosa-soft) / <alpha-value>)",
         },
         text: {
           primary: "rgb(var(--color-text-primary) / <alpha-value>)",

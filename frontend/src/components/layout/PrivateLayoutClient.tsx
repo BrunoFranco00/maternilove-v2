@@ -13,7 +13,7 @@ export function PrivateLayoutClient({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const homeHref = '/app/dashboard';
+  const homeHref = '/app/inicio';
 
   const handleLogout = () => {
     router.push('/login');

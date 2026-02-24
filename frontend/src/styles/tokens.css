@@ -9,6 +9,8 @@
   --color-brand-primary: 43 58 103;        /* Azul profundo */
   --color-brand-accent: 122 94 87;         /* Terracota suave */
   --color-brand-muted: 142 151 145;        /* Verde musgo suave */
+  --color-brand-rosa-light: 255 240 245;   /* Rosa claro discreto */
+  --color-brand-rosa-soft: 248 228 235;    /* Rosa soft */
 
   /* States */
   --color-success: 61 122 90;

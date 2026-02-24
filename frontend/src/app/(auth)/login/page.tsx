@@ -21,7 +21,7 @@ export default function LoginPage() {
     e.preventDefault();
     setIsLoading(true);
     showToast('Auth desabilitado - redirecionando para dashboard', 'success');
-    router.replace('/app/dashboard');
+    router.replace('/app/inicio');
     setIsLoading(false);
   };
 
