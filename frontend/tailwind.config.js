@@ -4,6 +4,7 @@ export default {
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/design-system/**/*.{js,ts}",
   ],
   theme: {
     extend: {
@@ -36,9 +37,41 @@ export default {
           500: "rgb(var(--color-brand-accent))",
           600: "rgb(var(--color-brand-accent))",
         },
+        /* Materni Love — rosa institucional elegante */
+        "ml-rosa": {
+          50: "rgb(255 250 252)",
+          100: "rgb(255 240 248)",
+          200: "rgb(252 228 240)",
+          300: "rgb(248 218 232)",
+          400: "rgb(245 200 220)",
+          500: "rgb(238 175 200)",
+          600: "rgb(220 150 175)",
+          700: "rgb(180 120 150)",
+        },
+        "ml-bg": {
+          DEFAULT: "rgb(252 250 251)",
+          surface: "rgb(255 255 255)",
+          muted: "rgb(248 247 248)",
+        },
       },
       borderRadius: {
         lg: "var(--radius-lg)",
+        "ml-sm": "0.5rem",
+        "ml-md": "0.75rem",
+        "ml-lg": "1rem",
+        "ml-xl": "1.25rem",
+        "ml-2xl": "1.5rem",
+      },
+      boxShadow: {
+        "ml-xs": "0 1px 2px rgba(0, 0, 0, 0.04)",
+        "ml-sm": "0 2px 8px rgba(0, 0, 0, 0.04)",
+        "ml-md": "0 4px 20px rgba(0, 0, 0, 0.04)",
+        "ml-lg": "0 8px 30px rgba(0, 0, 0, 0.06)",
+        "ml-xl": "0 12px 40px rgba(0, 0, 0, 0.08)",
+        "ml-glow-rosa": "0 0 24px rgba(238, 175, 200, 0.25)",
+        "ml-glow-rosa-soft": "0 0 40px rgba(248, 218, 232, 0.3)",
+        "ml-inner": "inset 0 1px 2px rgba(0, 0, 0, 0.04)",
+        "ml-logo": "inset 0 1px 2px rgba(255,255,255,0.4), 0 0 24px rgba(248, 218, 232, 0.4)",
       },
       animation: {
         "fade-in-up": "fadeInUp 0.4s ease-out",
