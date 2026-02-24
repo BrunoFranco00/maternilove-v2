@@ -24,8 +24,10 @@ export const useCoreStore = create<CoreState>((set) => ({
       );
       set({ isLoading: false });
       return response;
-    } catch {
+    } catch (err: unknown) {
       set({ isLoading: false, error: null });
+      const status = (err as { status?: number })?.status;
+      if (status === 401) throw err;
       return null;
     }
   },
