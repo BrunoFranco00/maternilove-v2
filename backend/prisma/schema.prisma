@@ -50,6 +50,7 @@ model User {
   followers          UserFollower[]     @relation("following")
   following          UserFollower[]     @relation("follower")
   authSessions       AuthSession[]
+  emotionalCheckins  EmotionalCheckin[]
 
   @@index([email])
   @@index([role])
@@ -93,6 +94,36 @@ model AuthSession {
   @@index([expiresAt])
   @@index([revokedAt])
 }
+
+// ============================================================================
+// EMOTIONAL CHECKIN
+// ============================================================================
+
+enum MoodType {
+  HAPPY
+  CALM
+  TIRED
+  ANXIOUS
+  SAD
+  OVERWHELMED
+}
+
+model EmotionalCheckin {
+  id        String   @id @default(cuid())
+  userId    String
+  mood      MoodType
+  note      String?
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+// ============================================================================
+// SEGUIDORES
+// ============================================================================
 
 model UserFollower {
   id          String   @id @default(cuid())
