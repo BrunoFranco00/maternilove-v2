@@ -9,7 +9,8 @@ export const API_ENDPOINTS = {
     FLAG: (key: string) => `/admin/flags/${key}`,
   },
   CORE: {
-    CHECK_IN: '/core/check-in',
-    RELIEF: (id: string) => `/core/relief/${id}`,
+    CHECK_IN: '/checkin',
+    CHECKIN_LATEST: '/checkin/latest',
+    CHECKIN_HISTORY: '/checkin',
   },
 } as const;
