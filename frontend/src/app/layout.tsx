@@ -16,7 +16,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 5,
   userScalable: true,
-  themeColor: '#2B3A67',
+  themeColor: '#C2185B',
 };
 
 export default function RootLayout({
@@ -27,11 +27,11 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <head>
-        <meta name="msapplication-TileColor" content="#2B3A67" />
+        <meta name="msapplication-TileColor" content="#C2185B" />
         <meta name="msapplication-config" content="/browserconfig.xml" />
       </head>
       <body suppressHydrationWarning className="focus-visible:outline-none">
-        <div className="min-h-screen bg-background">
+        <div className="min-h-screen">
           <ErrorBoundary>
             <Providers>
               {children}

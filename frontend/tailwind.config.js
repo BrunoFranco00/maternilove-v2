@@ -53,6 +53,27 @@ export default {
           surface: "rgb(255 255 255)",
           muted: "rgb(248 247 248)",
         },
+        /* Premium v2 */
+        premium: {
+          primary: "#C2185B",
+          "primary-dark": "#8E0E3A",
+          "soft-bg": "#FFF1F4",
+          "text-primary": "#1C1C1C",
+          "text-secondary": "#5F5F5F",
+        },
+      },
+      fontFamily: {
+        title: ["Playfair Display", "serif"],
+        body: ["Inter", "sans-serif"],
+      },
+      borderRadius: {
+        "premium-card": "20px",
+      },
+      boxShadow: {
+        "premium-card": "0 8px 32px rgba(194, 24, 91, 0.08)",
+        "premium-card-hover": "0 12px 40px rgba(194, 24, 91, 0.12)",
+        "premium-button": "0 4px 14px rgba(194, 24, 91, 0.35)",
+        "premium-button-hover": "0 6px 20px rgba(194, 24, 91, 0.4)",
       },
       borderRadius: {
         lg: "var(--radius-lg)",
