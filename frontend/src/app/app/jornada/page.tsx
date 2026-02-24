@@ -6,6 +6,7 @@ import { RoleGuard } from '@/components/guards/RoleGuard';
 import { CardPremium } from '@/components/ui/CardPremium';
 import { ButtonPremium } from '@/components/ui/ButtonPremium';
 import { Section } from '@/components/ui/Section';
+import { EmotionalConnection } from '@/components/emotional/EmotionalConnection';
 
 const DAILY_SUGGESTIONS = [
   { title: 'Nutrição', text: 'Inclua alimentos ricos em ferro hoje.' },
@@ -52,6 +53,11 @@ function JornadaContent() {
           Acompanhe sua trajetória de maternidade
         </p>
       </div>
+
+      {/* Conexão Emocional */}
+      <Section title="Narrativa semanal" subtitle="Sua conexão com a jornada">
+        <EmotionalConnection week={currentWeek} />
+      </Section>
 
       {/* Card Diário Funcional */}
       <Section title="Diário" subtitle="Registre seus momentos do dia">
