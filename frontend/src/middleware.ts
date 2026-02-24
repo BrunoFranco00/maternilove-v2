@@ -1,46 +1,32 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-/** Rotas públicas (não exigem autenticação) */
-const ALL_PUBLIC = ['/', '/login', '/register'];
+/** Cookie usado pelo middleware para checagem de sessão (quando auth estiver habilitada) */
+const AUTH_COOKIE = 'maternilove-session';
 
-/** Roles que podem acessar /admin/* */
-const ADMIN_ROLES = ['ADMIN', 'SUPER_ADMIN'];
+/**
+ * Rotas públicas (/, /login, /register, /planos, /profissionais) têm acesso livre.
+ * /app/* é protegido quando AUTH_MIDDLEWARE_ENABLED=true (usa cookie maternilove-session).
+ */
 
-function isAdminRole(role: string | undefined): boolean {
-  if (!role) return false;
-  const upper = role.toUpperCase();
-  return ADMIN_ROLES.includes(upper);
-}
+/** Quando true, protege /app/* e redireciona não autenticados para /login */
+const AUTH_MIDDLEWARE_ENABLED = process.env.AUTH_MIDDLEWARE_ENABLED === 'true';
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  if (pathname.startsWith('/api') || pathname.startsWith('/_next')) {
+  if (!pathname.startsWith('/app')) {
     return NextResponse.next();
   }
 
-  const isPublic = ALL_PUBLIC.some((r) => pathname === r || pathname.startsWith(`${r}/`));
-  if (isPublic) {
+  if (!AUTH_MIDDLEWARE_ENABLED) {
     return NextResponse.next();
   }
 
-  const userRole = request.cookies.get('user_role')?.value;
-
-  // /admin/*: apenas ADMIN ou SUPER_ADMIN
-  if (pathname.startsWith('/admin')) {
-    if (!userRole) {
-      return NextResponse.redirect(new URL('/login', request.url));
-    }
-    if (!isAdminRole(userRole)) {
-      return NextResponse.redirect(new URL('/check-in', request.url));
-    }
-    return NextResponse.next();
-  }
-
-  // Demais rotas privadas: exigir autenticação
-  if (!userRole) {
-    return NextResponse.redirect(new URL('/login', request.url));
+  const hasAuthCookie = request.cookies.has(AUTH_COOKIE);
+  if (!hasAuthCookie) {
+    const loginUrl = new URL('/login', request.url);
+    return NextResponse.redirect(loginUrl);
   }
 
   return NextResponse.next();
@@ -48,6 +34,6 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|images).*)',
+    '/((?!_next/static|_next/image|favicon.ico|images|api).*)',
   ],
 };

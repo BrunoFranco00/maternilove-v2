@@ -2,21 +2,20 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/hooks/useAuth';
-import { getDefaultRoute } from '@/utils/rbac';
 import { t } from '@/lib/i18n';
 
+/**
+ * PrivateLayoutClient - AUTH DESABILITADO PARA TESTE: sem useAuth.
+ */
 export function PrivateLayoutClient({
   children,
 }: {
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const { logout, user } = useAuth();
-  const homeHref = user ? getDefaultRoute(user.role) : '/check-in';
+  const homeHref = '/app/dashboard';
 
-  const handleLogout = async () => {
-    await logout();
+  const handleLogout = () => {
     router.push('/login');
   };
 
@@ -31,13 +30,8 @@ export function PrivateLayoutClient({
               </Link>
             </div>
             <nav className="flex items-center space-x-4">
-              {user && (
-                <span className="text-sm text-gray-600">{user.name}</span>
-              )}
-              <Link
-                href={homeHref}
-                className="text-gray-700 hover:text-gray-900"
-              >
+              <span className="text-sm text-gray-500">(auth off)</span>
+              <Link href={homeHref} className="text-gray-700 hover:text-gray-900">
                 {t('nav.dashboard')}
               </Link>
               <button

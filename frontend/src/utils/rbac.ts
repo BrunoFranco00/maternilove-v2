@@ -22,35 +22,35 @@ const ROLE_PERMISSIONS: Record<UserRole, RolePermissions> = {
   USER: {
     canAccessDashboard: false,
     requiresOnboarding: false,
-    defaultRoute: '/check-in',
+    defaultRoute: '/app/check-in',
   },
   MOTHER: {
     canAccessDashboard: true,
     requiresOnboarding: true,
-    onboardingRoute: '/onboarding/mother',
-    defaultRoute: '/check-in',
+    onboardingRoute: '/app/onboarding/mother',
+    defaultRoute: '/app/check-in',
   },
   PROFESSIONAL: {
     canAccessDashboard: true,
     requiresOnboarding: true,
-    onboardingRoute: '/onboarding/professional',
-    defaultRoute: '/check-in',
+    onboardingRoute: '/app/onboarding/professional',
+    defaultRoute: '/app/check-in',
   },
   COMPANY: {
     canAccessDashboard: true,
     requiresOnboarding: true,
-    onboardingRoute: '/onboarding/company',
-    defaultRoute: '/check-in',
+    onboardingRoute: '/app/onboarding/company',
+    defaultRoute: '/app/check-in',
   },
   ADMIN: {
     canAccessDashboard: true,
     requiresOnboarding: false,
-    defaultRoute: '/admin',
+    defaultRoute: '/app/admin',
   },
   SUPER_ADMIN: {
     canAccessDashboard: true,
     requiresOnboarding: false,
-    defaultRoute: '/admin',
+    defaultRoute: '/app/admin',
   },
 };
 
