@@ -39,11 +39,7 @@ export class ApiClient {
     try {
       let token: string | null = null;
       if (typeof window !== 'undefined') {
-        const cookies = document.cookie.split('; ');
-        const tokenCookie = cookies.find(row => row.startsWith('accessToken='));
-        if (tokenCookie) {
-          token = tokenCookie.split('=')[1];
-        }
+        token = localStorage.getItem('accessToken');
       }
 
       const response = await fetch(`${this.baseURL}${endpoint}`, {
@@ -72,8 +68,8 @@ export class ApiClient {
 
         if (response.status === 401) {
           if (typeof window !== 'undefined') {
-            document.cookie = 'accessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-            document.cookie = 'refreshToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('refreshToken');
           }
         }
 

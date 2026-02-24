@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { api } from '../services/api'
+import { apiClient } from '@/lib/api/client'
 import { useAuth } from '../contexts/AuthContext'
 import { toast } from 'react-toastify'
 
@@ -44,13 +44,9 @@ export default function Feed() {
   const loadFeed = async () => {
     try {
       setLoading(true)
-      const response = await api.get<{
-        success: boolean
-        data: { posts: Post[] }
-      }>('/social/feed')
-      
-      if (response.success) {
-        setPosts(response.data.posts)
+      const data = await apiClient.get<{ posts: Post[] }>('/social/feed')
+      if (data?.posts) {
+        setPosts(data.posts)
       }
     } catch (error: any) {
       toast.error('Erro ao carregar feed')
@@ -65,16 +61,13 @@ export default function Feed() {
 
     try {
       setCreatingPost(true)
-      const response = await api.post<{
-        success: boolean
-        data: Post
-      }>('/social/posts', {
+      const post = await apiClient.post<Post>('/social/posts', {
         content: newPostContent,
         images: [],
       })
 
-      if (response.success) {
-        setPosts([response.data, ...posts])
+      if (post) {
+        setPosts([post, ...posts])
         setNewPostContent('')
         toast.success('Post criado com sucesso!')
       }
@@ -93,18 +86,15 @@ export default function Feed() {
     }
 
     try {
-      const response = await api.post<{
-        success: boolean
-        data: { liked: boolean }
-      }>(`/social/posts/${postId}/like`)
+      const data = await apiClient.post<{ liked: boolean }>(`/social/posts/${postId}/like`)
 
-      if (response.success) {
+      if (data) {
         setPosts(posts.map(post => {
           if (post.id === postId) {
             return {
               ...post,
-              isLiked: response.data.liked,
-              likesCount: response.data.liked
+              isLiked: data.liked,
+              likesCount: data.liked
                 ? post.likesCount + 1
                 : post.likesCount - 1,
             }
@@ -122,19 +112,16 @@ export default function Feed() {
     if (!user || !commentText[postId]?.trim()) return
 
     try {
-      const response = await api.post<{
-        success: boolean
-        data: Post['comments'][0]
-      }>(`/social/posts/${postId}/comments`, {
+      const comment = await apiClient.post<Post['comments'][0]>(`/social/posts/${postId}/comments`, {
         text: commentText[postId],
       })
 
-      if (response.success) {
+      if (comment) {
         setPosts(posts.map(post => {
           if (post.id === postId) {
             return {
               ...post,
-              comments: [response.data, ...post.comments],
+              comments: [comment, ...post.comments],
               commentsCount: post.commentsCount + 1,
             }
           }

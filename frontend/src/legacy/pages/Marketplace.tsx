@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { api } from '../services/api'
+import { apiClient } from '@/lib/api/client'
 import { useAuth } from '../contexts/AuthContext'
 import { toast } from 'react-toastify'
 import { Link } from 'react-router-dom'
@@ -36,13 +36,9 @@ export default function Marketplace() {
     try {
       setLoading(true)
       const query = search ? `?search=${encodeURIComponent(search)}` : ''
-      const response = await api.get<{
-        success: boolean
-        data: { products: Product[] }
-      }>(`/marketplace/products${query}`)
-
-      if (response.success) {
-        setProducts(response.data.products)
+      const data = await apiClient.get<{ products: Product[] }>(`/marketplace/products${query}`)
+      if (data?.products) {
+        setProducts(data.products)
       }
     } catch (error: any) {
       toast.error('Erro ao carregar produtos')

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { api } from '../services/api'
+import { apiClient } from '@/lib/api/client'
 import { useAuth } from '../contexts/AuthContext'
 import { toast } from 'react-toastify'
 
@@ -59,13 +59,9 @@ export default function Community() {
 
   const loadCategories = async () => {
     try {
-      const response = await api.get<{
-        success: boolean
-        data: Category[]
-      }>('/community/categories')
-
-      if (response.success) {
-        setCategories(response.data)
+      const data = await apiClient.get<Category[]>('/community/categories')
+      if (data) {
+        setCategories(Array.isArray(data) ? data : [])
       }
     } catch (error: any) {
       toast.error('Erro ao carregar categorias')
@@ -77,13 +73,9 @@ export default function Community() {
     try {
       setLoading(true)
       const query = selectedCategory ? `?categoryId=${selectedCategory}` : ''
-      const response = await api.get<{
-        success: boolean
-        data: { posts: CommunityPost[] }
-      }>(`/community/posts${query}`)
-
-      if (response.success) {
-        setPosts(response.data.posts)
+      const data = await apiClient.get<{ posts: CommunityPost[] }>(`/community/posts${query}`)
+      if (data?.posts) {
+        setPosts(data.posts)
       }
     } catch (error: any) {
       toast.error('Erro ao carregar posts')
@@ -100,13 +92,10 @@ export default function Community() {
     }
 
     try {
-      const response = await api.post<{
-        success: boolean
-        data: CommunityPost
-      }>('/community/posts', newPost)
+      const post = await apiClient.post<CommunityPost>('/community/posts', newPost)
 
-      if (response.success) {
-        setPosts([response.data, ...posts])
+      if (post) {
+        setPosts([post, ...posts])
         setNewPost({ categoryId: '', title: '', content: '' })
         setShowCreatePost(false)
         toast.success('Post criado com sucesso!')
