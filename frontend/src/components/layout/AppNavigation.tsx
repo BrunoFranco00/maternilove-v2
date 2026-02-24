@@ -53,7 +53,7 @@ export function AppNavigation() {
       {/* Sidebar Desktop — hidden em mobile */}
       <aside className="hidden md:flex flex-col fixed left-0 top-0 h-full w-64 bg-ml-bg-surface border-r border-ml-rosa-200/30 shadow-ml-sm pt-6">
         <Link href="/app/inicio" className="flex items-center gap-3 px-5 mb-6">
-          <Logo3D size="md" />
+          <Logo3D size="lg" />
           <span className="text-lg font-semibold text-text-primary">MaterniLove</span>
         </Link>
         <nav className="flex-1 px-3 space-y-0.5 overflow-y-auto">

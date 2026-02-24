@@ -5,28 +5,31 @@ interface Logo3DProps {
   className?: string;
 }
 
-const sizes = {
-  sm: 'w-12 h-12',
-  md: 'w-16 h-16',
-  lg: 'w-20 h-20',
+const sizeConfig = {
+  sm: { size: 'w-14 h-14', radius: 'rounded-[14px]' },
+  md: { size: 'w-20 h-20', radius: 'rounded-[20px]' },
+  lg: { size: 'w-24 h-24', radius: 'rounded-[24px]' }, // 96x96 padrão premium
 };
 
-export function Logo3D({ size = 'md', className = '' }: Logo3DProps) {
-  const sizeClass = sizes[size];
+export function Logo3D({ size = 'lg', className = '' }: Logo3DProps) {
+  const { size: sizeClass, radius } = sizeConfig[size];
 
   return (
     <div
       className={`
-        relative flex items-center justify-center rounded-full
-        bg-gradient-to-br from-ml-rosa-300 via-ml-rosa-200 to-ml-rosa-400
-        shadow-ml-logo
-        ${sizeClass} ${className}
+        relative flex items-center justify-center
+        bg-[radial-gradient(ellipse_at_center,_#C2185B_0%,_#8E0E3A_100%)]
+        shadow-[0_8px_24px_rgba(194,24,91,0.25)]
+        ${sizeClass} ${radius} ${className}
       `}
     >
-      {/* Coração branco central — inline SVG (não externo) */}
+      {/* Coração branco — 85% da área, com drop shadow */}
       <svg
         viewBox="0 0 24 24"
-        className="w-1/2 h-1/2 text-white drop-shadow-sm"
+        className="w-[85%] h-[85%] text-white"
+        style={{
+          filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.15))',
+        }}
         fill="currentColor"
         aria-hidden
       >
