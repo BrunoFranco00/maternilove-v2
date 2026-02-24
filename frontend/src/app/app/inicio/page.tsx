@@ -3,12 +3,15 @@
 import Link from 'next/link';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { RoleGuard } from '@/components/guards/RoleGuard';
+import { CardPremium } from '@/components/ui/CardPremium';
+import { getArticlesForPhase } from '@/data/articles';
 
 const CARD_SHADOW = '0 4px 20px rgba(0,0,0,0.04)';
 
 function InicioContent() {
   const nome = 'Mãe';
   const semanas = 24;
+  const artigosParaVoce = getArticlesForPhase(semanas, 6);
 
   return (
     <div className="space-y-8 md:space-y-10 max-w-5xl mx-auto">
@@ -67,6 +70,35 @@ function InicioContent() {
             className="absolute bottom-0 right-0 w-24 h-24 rounded-full bg-gradient-to-br from-brand-rosa-light to-brand-rosa-soft opacity-50 blur-xl -mr-6 -mb-6"
             aria-hidden
           />
+        </div>
+      </div>
+
+      {/* Para você hoje */}
+      <div>
+        <h2 className="text-lg font-semibold text-text-primary mb-4">
+          Para você hoje
+        </h2>
+        <p className="text-text-secondary text-sm mb-4">
+          Conteúdos selecionados para sua fase
+        </p>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {artigosParaVoce.map((artigo) => (
+            <Link key={artigo.id} href={`/app/conteudo/${artigo.slug}`}>
+              <CardPremium>
+                <div className="p-5">
+                  <span className="text-xs font-medium text-ml-rosa-600 uppercase tracking-wide">
+                    {artigo.category}
+                  </span>
+                  <h3 className="font-semibold text-text-primary mt-2 line-clamp-2">
+                    {artigo.title}
+                  </h3>
+                  <p className="text-sm text-text-secondary mt-1 line-clamp-2">
+                    {artigo.excerpt}
+                  </p>
+                </div>
+              </CardPremium>
+            </Link>
+          ))}
         </div>
       </div>
 
