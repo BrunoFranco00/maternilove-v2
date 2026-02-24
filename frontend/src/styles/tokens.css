@@ -1,0 +1,20 @@
+:root {
+  /* Neutral */
+  --color-bg: 248 247 244;
+  --color-surface: 255 255 255;
+  --color-text-primary: 32 32 32;
+  --color-text-secondary: 92 92 92;
+
+  /* Brand */
+  --color-brand-primary: 43 58 103;        /* Azul profundo */
+  --color-brand-accent: 122 94 87;         /* Terracota suave */
+  --color-brand-muted: 142 151 145;        /* Verde musgo suave */
+
+  /* States */
+  --color-success: 61 122 90;
+  --color-warning: 168 113 44;
+  --color-danger: 128 49 49;
+
+  /* Radius */
+  --radius-lg: 16px;
+}

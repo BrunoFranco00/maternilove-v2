@@ -8,39 +8,46 @@ export default {
   theme: {
     extend: {
       colors: {
+        background: "rgb(var(--color-bg) / <alpha-value>)",
+        surface: "rgb(var(--color-surface) / <alpha-value>)",
+        brand: {
+          primary: "rgb(var(--color-brand-primary) / <alpha-value>)",
+          accent: "rgb(var(--color-brand-accent) / <alpha-value>)",
+          muted: "rgb(var(--color-brand-muted) / <alpha-value>)",
+        },
+        text: {
+          primary: "rgb(var(--color-text-primary) / <alpha-value>)",
+          secondary: "rgb(var(--color-text-secondary) / <alpha-value>)",
+        },
+        /* Mapeamento para componentes existentes (substitui rosa por paleta adulta) */
         primary: {
-          50: '#FBE7F3',
-          100: '#F8D5EA',
-          200: '#F472B6',
-          500: '#D946A6',
-          600: '#BE185D',
-          700: '#9D174D',
-          900: '#500724',
+          50: "rgb(245 247 250)",
+          100: "rgb(230 235 245)",
+          200: "rgb(180 195 220)",
+          300: "rgb(130 155 195)",
+          400: "rgb(80 115 170)",
+          500: "rgb(var(--color-brand-primary))",
+          600: "rgb(var(--color-brand-primary))",
+          700: "rgb(30 42 71)",
         },
         secondary: {
-          50: '#E9D5FF',
-          500: '#A855F7',
-          600: '#9333EA',
-        },
-        success: {
-          500: '#10B981',
-        },
-        info: {
-          500: '#3B82F6',
+          500: "rgb(var(--color-brand-accent))",
+          600: "rgb(var(--color-brand-accent))",
         },
       },
+      borderRadius: {
+        lg: "var(--radius-lg)",
+      },
       animation: {
-        'fade-in-up': 'fadeInUp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)',
-        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-        'bounce-slow': 'bounce 2s infinite',
+        "fade-in-up": "fadeInUp 0.4s ease-out",
       },
       keyframes: {
         fadeInUp: {
-          '0%': { opacity: '0', transform: 'translateY(20px)' },
-          '100%': { opacity: '1', transform: 'translateY(0)' },
+          "0%": { opacity: "0", transform: "translateY(8px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
         },
       },
     },
   },
   plugins: [],
-}
+};
