@@ -51,7 +51,7 @@ function ArticleContent({ article }: { article: NonNullable<ReturnType<typeof ge
             return (
               <h2
                 key={i}
-                className="text-xl font-semibold text-text-primary mt-10 mb-4 first:mt-0"
+                className="font-title text-2xl font-semibold text-premium-text-primary mt-12 mb-4 first:mt-0"
               >
                 {part.text}
               </h2>
@@ -61,24 +61,29 @@ function ArticleContent({ article }: { article: NonNullable<ReturnType<typeof ge
             return (
               <div
                 key={i}
-                className="my-6 p-6 rounded-ml-2xl bg-ml-rosa-50 border-l-4 border-ml-rosa-400"
+                className="my-8 p-6 md:p-8 rounded-[20px] bg-premium-soft-bg/60 border-l-4 border-premium-primary"
               >
-                <p className="text-sm font-medium text-ml-rosa-700 mb-2">Dica</p>
-                <p className="text-text-primary text-sm leading-relaxed">
+                <p className="font-title text-sm font-semibold text-premium-primary mb-2 uppercase tracking-wide">
+                  Destaque
+                </p>
+                <p className="font-body text-premium-text-primary text-base leading-relaxed">
                   {part.text}
                 </p>
               </div>
             );
           }
           return (
-            <p key={i} className="text-text-secondary leading-relaxed mb-4">
+            <p
+              key={i}
+              className="font-body text-premium-text-secondary leading-relaxed mb-6 text-[1.05rem]"
+            >
               {part.text}
             </p>
           );
         })}
       </div>
-      <footer className="mt-12 pt-6 border-t border-ml-rosa-200/50">
-        <p className="text-xs text-text-secondary">
+      <footer className="mt-16 pt-8 border-t border-premium-soft-bg">
+        <p className="font-body text-xs text-premium-text-secondary">
           <strong>Referências:</strong> {article.reference}
         </p>
       </footer>
@@ -94,12 +99,12 @@ function ConteudoPageContent() {
   if (!article) {
     return (
       <div className="p-8 max-w-5xl mx-auto">
-        <h1 className="text-2xl font-semibold text-text-primary mb-4">
+        <h1 className="font-title text-2xl font-semibold text-premium-text-primary mb-4">
           Artigo não encontrado
         </h1>
         <Link
           href="/app/inicio"
-          className="text-ml-rosa-600 hover:text-ml-rosa-700 font-medium"
+          className="text-premium-primary hover:text-premium-primary-dark font-medium"
         >
           Voltar ao início
         </Link>
@@ -116,25 +121,29 @@ function ConteudoPageContent() {
   };
 
   return (
-    <div className="p-8 space-y-8 max-w-5xl mx-auto">
+    <div className="p-8 space-y-10 max-w-5xl mx-auto">
       <Link
         href="/app/inicio"
-        className="inline-flex items-center gap-2 text-sm text-ml-rosa-600 hover:text-ml-rosa-700 font-medium"
+        className="inline-flex items-center gap-2 text-sm text-premium-primary hover:text-premium-primary-dark font-medium"
       >
         ← Voltar
       </Link>
 
-      {/* Hero */}
-      <header className="space-y-4">
-        <span className="inline-block px-3 py-1 rounded-full bg-ml-rosa-100 text-ml-rosa-600 text-xs font-medium">
+      {/* Hero editorial grande */}
+      <header className="space-y-6">
+        <span className="inline-block px-4 py-1.5 rounded-full bg-premium-soft-bg text-premium-primary text-xs font-medium uppercase tracking-widest">
           {categoryLabels[article.category] || article.category}
         </span>
-        <h1 className="text-3xl md:text-4xl font-semibold text-text-primary leading-tight">
+        <h1 className="font-title text-3xl md:text-5xl font-semibold text-premium-text-primary leading-tight">
           {article.title}
         </h1>
-        <p className="text-lg text-text-secondary max-w-2xl">
+        <p className="font-body text-xl text-premium-text-secondary max-w-2xl leading-relaxed">
           {article.excerpt}
         </p>
+        {/* Imagem ilustrativa placeholder */}
+        <div className="aspect-[21/9] rounded-[20px] bg-gradient-to-br from-premium-primary/15 via-premium-soft-bg to-premium-primary/5 flex items-center justify-center mt-8">
+          <span className="text-7xl opacity-20">♥</span>
+        </div>
       </header>
 
       {/* Conteúdo */}
