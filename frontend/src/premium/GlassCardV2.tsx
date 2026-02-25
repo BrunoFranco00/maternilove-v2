@@ -1,6 +1,7 @@
 'use client';
 
 import { ReactNode } from 'react';
+import { colors, shadows } from './foundation';
 
 interface GlassCardV2Props {
   children: ReactNode;
@@ -12,13 +13,17 @@ export function GlassCardV2({ children, className = '' }: GlassCardV2Props) {
     <div
       className={`
         rounded-[20px] p-6
-        bg-white/75 backdrop-blur-xl
-        border border-white/50
-        shadow-[0_8px_32px_rgba(194,24,91,0.08)]
-        hover:shadow-[0_12px_40px_rgba(194,24,91,0.12)]
-        transition-all duration-200
+        backdrop-blur-lg
+        transition-all duration-[250ms] ease-out
+        hover:-translate-y-[6px]
+        hover:shadow-[0_20px_60px_rgba(142,14,58,0.25)]
         ${className}
       `}
+      style={{
+        background: colors.glassBackground,
+        border: `1px solid ${colors.glassBorder}`,
+        boxShadow: shadows.depthMedium,
+      }}
     >
       {children}
     </div>
