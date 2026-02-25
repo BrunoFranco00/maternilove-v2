@@ -1,8 +1,22 @@
 'use client';
 
+import { Suspense, lazy } from 'react';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { RoleGuard } from '@/components/guards/RoleGuard';
 import { GlassCardV2 } from '@/premium/GlassCardV2';
+
+const Progress3DModel = lazy(() =>
+  import('@/components/Progress3DModel').then((m) => ({ default: m.Progress3DModel }))
+);
+
+function Skeleton3D() {
+  return (
+    <div className="w-full h-[200px] min-h-[200px] rounded-xl bg-gradient-to-br from-[#FFF1F4]/80 to-[#FFF8F9] flex flex-col items-center justify-center gap-3 border border-[#B3124F]/10">
+      <div className="w-16 h-16 rounded-full bg-[#B3124F]/10 animate-pulse" />
+      <span className="text-[#5F5F5F] text-sm font-medium">Carregando visual...</span>
+    </div>
+  );
+}
 
 function ProgressoContent() {
   const semanaAtual = 24;
@@ -10,10 +24,10 @@ function ProgressoContent() {
   return (
     <div className="p-8 space-y-6 max-w-5xl mx-auto">
       <div>
-        <h1 className="text-2xl md:text-3xl font-semibold text-text-primary">
+        <h1 className="text-2xl md:text-3xl font-semibold text-[#1C1C1C]">
           Progresso
         </h1>
-        <p className="text-text-secondary mt-1">
+        <p className="text-[#5F5F5F] mt-1">
           Acompanhe o desenvolvimento da sua gestação
         </p>
       </div>
@@ -39,11 +53,11 @@ function ProgressoContent() {
       <GlassCardV2>
         <div className="p-6">
           <h3 className="font-medium text-[#1C1C1C] mb-4">
-            Placeholder visual 3D
+            Seu bebê nesta fase
           </h3>
-          <div className="h-40 rounded-xl bg-gradient-to-br from-[#FFF1F4] to-[#FFF8F9] flex items-center justify-center border border-[#B3124F]/10">
-            <span className="text-[#5F5F5F] text-sm">Gráfico em breve</span>
-          </div>
+          <Suspense fallback={<Skeleton3D />}>
+            <Progress3DModel week={semanaAtual} />
+          </Suspense>
         </div>
       </GlassCardV2>
     </div>
