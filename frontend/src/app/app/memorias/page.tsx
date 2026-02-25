@@ -25,7 +25,7 @@ function MemoriasContent() {
         {[1, 2, 3, 4, 5, 6].map((i) => (
           <GlassCardV2 key={i}>
             <div className="aspect-square rounded-xl bg-[#FFF1F4] flex items-center justify-center">
-              <span className="text-[#C2185B] text-4xl">+</span>
+              <span className="text-[#B3124F] text-4xl">+</span>
             </div>
             <div className="p-3">
               <p className="text-sm text-[#5F5F5F]">Placeholder</p>

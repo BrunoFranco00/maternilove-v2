@@ -20,7 +20,7 @@ function MercadoContent() {
         {[1, 2, 3, 4, 5, 6].map((i) => (
           <GlassCardV2 key={i}>
             <div className="aspect-[4/3] bg-[#FFF1F4] rounded-t-xl flex items-center justify-center">
-              <span className="text-[#C2185B] text-2xl">Produto</span>
+              <span className="text-[#B3124F] text-2xl">Produto</span>
             </div>
             <div className="p-4">
               <h3 className="font-medium text-[#1C1C1C]">Produto placeholder {i}</h3>

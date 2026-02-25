@@ -1,11 +1,11 @@
 /**
- * Paleta oficial MaterniLove Premium
+ * Paleta oficial MaterniLove Premium — Elite
  */
 
 export const colors = {
-  primaryRose: '#C2185B',
-  primaryRoseDark: '#8E0E3A',
-  primaryRoseLight: '#F8BBD0',
+  primaryRose: '#B3124F',
+  primaryRoseDark: '#7F0E36',
+  primaryRoseLight: '#F6A9C4',
 
   glassBorder: 'rgba(255,255,255,0.55)',
   glassBackground: 'rgba(255,255,255,0.65)',

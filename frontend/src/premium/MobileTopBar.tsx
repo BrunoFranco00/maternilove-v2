@@ -20,7 +20,7 @@ export function MobileTopBar() {
       </Link>
       <Link
         href="/app/perfil"
-        className="p-2 -mr-2 rounded-full text-[#5F5F5F] hover:text-[#C2185B] hover:bg-[#FFF1F4]/50 transition-colors duration-250"
+        className="p-2 -mr-2 rounded-full text-[#5F5F5F] hover:text-[#B3124F] hover:bg-[#FFF1F4]/50 transition-colors duration-250"
         aria-label="Perfil"
       >
         <svg

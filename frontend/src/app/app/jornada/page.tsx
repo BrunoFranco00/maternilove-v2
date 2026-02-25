@@ -68,7 +68,7 @@ function JornadaContent() {
               onChange={(e) => setDailyNote(e.target.value)}
               placeholder="Como foi seu dia? O que você sentiu?"
               rows={4}
-              className="w-full px-4 py-3 rounded-lg border border-[#C2185B]/20 bg-[#FFF1F4]/30 text-[#1C1C1C] placeholder:text-[#5F5F5F]/70 focus:outline-none focus:ring-2 focus:ring-[#C2185B]/30 focus:border-[#C2185B]/40 transition-all duration-200 resize-none"
+              className="w-full px-4 py-3 rounded-lg border border-[#B3124F]/20 bg-[#FFF1F4]/30 text-[#1C1C1C] placeholder:text-[#5F5F5F]/70 focus:outline-none focus:ring-2 focus:ring-[#B3124F]/30 focus:border-[#B3124F]/40 transition-all duration-200 resize-none"
             />
             <div className="flex items-center gap-3">
               <PremiumButtonV3
@@ -94,7 +94,7 @@ function JornadaContent() {
           {DAILY_SUGGESTIONS.map((item, i) => (
             <GlassCardV2 key={i}>
               <div className="p-5">
-                <h3 className="font-semibold text-[#C2185B] mb-2">
+                <h3 className="font-semibold text-[#B3124F] mb-2">
                   {item.title}
                 </h3>
                 <p className="text-sm text-[#5F5F5F]">{item.text}</p>
@@ -119,7 +119,7 @@ function JornadaContent() {
             {savedNotes.map((note, i) => (
               <GlassCardV2 key={i}>
                 <div className="p-5 flex flex-col sm:flex-row sm:items-center gap-3">
-                  <span className="text-xs text-[#C2185B] font-medium">
+                  <span className="text-xs text-[#B3124F] font-medium">
                     {note.date}
                   </span>
                   <p className="text-sm text-[#1C1C1C] flex-1">{note.text}</p>

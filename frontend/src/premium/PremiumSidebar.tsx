@@ -38,7 +38,7 @@ export function PremiumSidebar() {
               href={item.href}
               className={`
                 block px-4 py-3 rounded-xl text-sm font-medium transition-colors
-                ${isActive ? 'bg-[#FFF1F4] text-[#C2185B]' : 'text-[#5F5F5F] hover:bg-[#FFF1F4]/50'}
+                ${isActive ? 'bg-[#FFF1F4] text-[#B3124F]' : 'text-[#5F5F5F] hover:bg-[#FFF1F4]/50'}
               `}
             >
               {item.label}

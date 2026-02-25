@@ -37,7 +37,7 @@ export function PremiumBottomNav() {
               href={item.href}
               className={`
                 flex flex-col items-center justify-center flex-1 min-w-0 py-2 text-[10px] font-medium transition-colors
-                ${isActive ? 'text-[#C2185B]' : 'text-[#5F5F5F]'}
+                ${isActive ? 'text-[#B3124F]' : 'text-[#5F5F5F]'}
               `}
             >
               {item.label}

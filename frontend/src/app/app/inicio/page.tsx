@@ -66,7 +66,7 @@ function ArticleHero({ article }: { article: Article }) {
           />
         </div>
         <div className="p-6 space-y-4">
-          <span className="text-xs font-medium text-[#C2185B] uppercase tracking-[0.1em]">
+          <span className="text-xs font-medium text-[#B3124F] uppercase tracking-[0.1em]">
             {article.category}
           </span>
           <h2 className="text-2xl font-semibold text-[#1C1C1C] leading-tight" style={{ fontSize: '24px', fontWeight: 600 }}>
@@ -106,7 +106,7 @@ function ArticleCard({ article }: { article: Article }) {
             />
           </div>
           <div className="flex-1 min-w-0 p-4 flex flex-col justify-center">
-            <span className="text-xs font-medium text-[#C2185B] uppercase tracking-wide">
+            <span className="text-xs font-medium text-[#B3124F] uppercase tracking-wide">
               {article.category}
             </span>
             <h3 className="font-semibold text-[#1C1C1C] mt-1 line-clamp-2 text-base">
@@ -193,7 +193,7 @@ function InicioContent() {
       </section>
 
       {/* Acesso rápido */}
-      <GlassCardV2 className="bg-[#FFF1F4]/30 border-[#C2185B]/20 transition-opacity duration-250">
+      <GlassCardV2 className="bg-[#FFF1F4]/30 border-[#B3124F]/20 transition-opacity duration-250">
         <h2 className="font-semibold text-base text-[#1C1C1C] mb-3">
           Acesso rápido
         </h2>

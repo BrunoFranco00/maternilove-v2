@@ -23,14 +23,14 @@ function ProgressoContent() {
           <h3 className="font-semibold text-[#1C1C1C] mb-2">
             Semana atual
           </h3>
-          <p className="text-3xl font-bold text-[#C2185B] mb-4">
+          <p className="text-3xl font-bold text-[#B3124F] mb-4">
             Semana {semanaAtual}
           </p>
           <p className="text-sm text-[#5F5F5F] mb-6">
             Dados fictícios para demonstração
           </p>
           <div
-            className="absolute -right-8 -bottom-8 w-32 h-32 rounded-full bg-gradient-to-br from-[#FFF1F4] to-[#F8BBD0] opacity-50 blur-2xl"
+            className="absolute -right-8 -bottom-8 w-32 h-32 rounded-full bg-gradient-to-br from-[#FFF1F4] to-[#F6A9C4] opacity-50 blur-2xl"
             aria-hidden
           />
         </div>
@@ -41,7 +41,7 @@ function ProgressoContent() {
           <h3 className="font-medium text-[#1C1C1C] mb-4">
             Placeholder visual 3D
           </h3>
-          <div className="h-40 rounded-xl bg-gradient-to-br from-[#FFF1F4] to-[#FFF8F9] flex items-center justify-center border border-[#C2185B]/10">
+          <div className="h-40 rounded-xl bg-gradient-to-br from-[#FFF1F4] to-[#FFF8F9] flex items-center justify-center border border-[#B3124F]/10">
             <span className="text-[#5F5F5F] text-sm">Gráfico em breve</span>
           </div>
         </div>

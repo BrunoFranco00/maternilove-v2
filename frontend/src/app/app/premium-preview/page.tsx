@@ -80,7 +80,7 @@ function ArtigoEditorial({
       </div>
 
       <div className="space-y-6">
-        <span className="text-xs font-medium text-[#C2185B] uppercase tracking-[0.1em]">
+        <span className="text-xs font-medium text-[#B3124F] uppercase tracking-[0.1em]">
           {artigo.categoria}
         </span>
         <h2
@@ -90,12 +90,12 @@ function ArtigoEditorial({
           {artigo.titulo}
         </h2>
 
-        <hr className="border-t border-[#C2185B]/15" />
+        <hr className="border-t border-[#B3124F]/15" />
 
         <div className="space-y-6 text-[#1C1C1C] leading-relaxed text-lg">
           <p className="flex">
             <span
-              className="float-left font-serif text-5xl leading-none text-[#C2185B] pt-1 pr-2"
+              className="float-left font-serif text-5xl leading-none text-[#B3124F] pt-1 pr-2"
               style={{ fontFamily: 'Georgia, serif' }}
             >
               {firstParagraph[0]}
@@ -109,10 +109,10 @@ function ArtigoEditorial({
           ))}
         </div>
 
-        <hr className="border-t border-[#C2185B]/15 my-8" />
+        <hr className="border-t border-[#B3124F]/15 my-8" />
 
-        <aside className="rounded-[16px] bg-[#FFF1F4]/50 border-l-4 border-[#C2185B] p-6">
-          <p className="text-sm font-semibold text-[#C2185B] uppercase tracking-wide mb-2">
+        <aside className="rounded-[16px] bg-[#FFF1F4]/50 border-l-4 border-[#B3124F] p-6">
+          <p className="text-sm font-semibold text-[#B3124F] uppercase tracking-wide mb-2">
             Você sabia?
           </p>
           <p className="text-[#1C1C1C] leading-relaxed">
@@ -182,7 +182,7 @@ function InicioPreview() {
       </section>
 
       {/* Acesso rápido */}
-      <GlassCardV2 className="bg-[#FFF1F4]/30 border-[#C2185B]/20">
+      <GlassCardV2 className="bg-[#FFF1F4]/30 border-[#B3124F]/20">
         <h2 className="font-semibold text-[#1C1C1C] mb-4">
           Acesso rápido
         </h2>
@@ -240,14 +240,14 @@ function ProgressoPreview() {
         <h3 className="font-semibold text-[#1C1C1C] mb-2">
           Semana atual
         </h3>
-        <p className="text-3xl font-bold text-[#C2185B] mb-4">
+        <p className="text-3xl font-bold text-[#B3124F] mb-4">
           Semana 24
         </p>
         <p className="text-sm text-[#5F5F5F] mb-6">
           Dados fictícios para demonstração
         </p>
-        <div className="pt-4 border-t border-[#C2185B]/15">
-          <p className="text-xs font-semibold text-[#C2185B] uppercase tracking-wide mb-2">
+        <div className="pt-4 border-t border-[#B3124F]/15">
+          <p className="text-xs font-semibold text-[#B3124F] uppercase tracking-wide mb-2">
             Mensagem para você
           </p>
           <TypingMessage text={mensagem} speed={35} className="text-[#1C1C1C] leading-relaxed" />
@@ -258,7 +258,7 @@ function ProgressoPreview() {
         <h3 className="font-medium text-[#1C1C1C] mb-4">
           Placeholder visual 3D
         </h3>
-        <div className="h-40 rounded-xl bg-gradient-to-br from-[#FFF1F4] to-[#FFF8F9] flex items-center justify-center border border-[#C2185B]/10">
+        <div className="h-40 rounded-xl bg-gradient-to-br from-[#FFF1F4] to-[#FFF8F9] flex items-center justify-center border border-[#B3124F]/10">
           <span className="text-[#5F5F5F] text-sm">
             Gráfico em breve
           </span>

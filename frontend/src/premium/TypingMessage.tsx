@@ -45,7 +45,7 @@ export function TypingMessage({
       {displayed}
       {!isComplete && (
         <span
-          className="inline-block w-0.5 h-4 bg-[#C2185B] ml-0.5 animate-pulse"
+          className="inline-block w-0.5 h-4 bg-[#B3124F] ml-0.5 animate-pulse"
           style={{ verticalAlign: 'text-bottom' }}
         />
       )}

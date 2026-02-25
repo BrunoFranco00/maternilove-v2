@@ -12,7 +12,7 @@ const NAV_ITEMS = [
 ] as const;
 
 function NavIcon({ icon, isActive }: { icon: string; isActive: boolean }) {
-  const color = isActive ? '#C2185B' : '#5F5F5F';
+  const color = isActive ? '#B3124F' : '#5F5F5F';
   const size = 24;
 
   switch (icon) {
@@ -83,8 +83,8 @@ export function MobileBottomNav() {
               key={item.href}
               href={item.href}
               className={`
-                flex flex-col items-center justify-center flex-1 min-w-0 gap-1 py-2 transition-colors duration-250
-                ${isActive ? 'text-[#C2185B]' : 'text-[#5F5F5F]'}
+                flex flex-col items-center justify-center flex-1 min-w-0 gap-1 py-2 transition-all duration-250
+                ${isActive ? 'text-[#B3124F] [&>svg]:animate-[navActiveBounce_400ms_cubic-bezier(0.34,1.56,0.64,1)]' : 'text-[#5F5F5F]'}
               `}
             >
               <NavIcon icon={item.icon} isActive={isActive} />

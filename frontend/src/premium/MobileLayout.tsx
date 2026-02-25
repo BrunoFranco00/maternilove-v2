@@ -20,6 +20,13 @@ export function MobileLayout({ children }: MobileLayoutProps) {
           background: `radial-gradient(ellipse 120% 80% at 50% 0%, #FFF5F8 0%, #FFE6EC 40%, #FFF8F9 70%, #FFF 100%)`,
         }}
       />
+      {/* Radial light center */}
+      <div
+        className="fixed inset-0 -z-10 pointer-events-none"
+        style={{
+          background: 'radial-gradient(ellipse 80% 50% at 50% 20%, rgba(255,255,255,0.6) 0%, transparent 60%)',
+        }}
+      />
       {/* Overlay de noise leve */}
       <div
         className="fixed inset-0 -z-10 opacity-[0.03] mix-blend-overlay pointer-events-none"
@@ -33,7 +40,10 @@ export function MobileLayout({ children }: MobileLayoutProps) {
       <MobileTopBar />
 
       <main className="flex-1 overflow-y-auto pb-20">
-        <div className="px-5 py-6 min-h-full">
+        <div
+          className="px-5 py-6 min-h-full"
+          style={{ animation: 'pageTransitionSmooth 280ms cubic-bezier(0.4, 0, 0.2, 1) forwards' }}
+        >
           {children}
         </div>
       </main>

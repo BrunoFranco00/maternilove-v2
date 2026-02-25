@@ -168,11 +168,11 @@ function PerfilContent() {
             <div>
               <div className="flex justify-between text-sm mb-1.5">
                 <span className="text-text-secondary">Preenchimento</span>
-                <span className="font-medium text-[#C2185B]">{progress}%</span>
+                <span className="font-medium text-[#B3124F]">{progress}%</span>
               </div>
               <div className="h-2 rounded-full bg-[#FFF1F4] overflow-hidden">
                 <div
-                  className="h-full bg-[#C2185B] rounded-full transition-all duration-300"
+                  className="h-full bg-[#B3124F] rounded-full transition-all duration-300"
                   style={{ width: `${progress}%` }}
                 />
               </div>
@@ -182,7 +182,7 @@ function PerfilContent() {
       </GlassCardV2>
 
       {/* Tabs */}
-      <div className="flex gap-1 p-1 rounded-xl bg-[#FFF1F4]/30 border border-[#C2185B]/15 overflow-x-auto">
+      <div className="flex gap-1 p-1 rounded-xl bg-[#FFF1F4]/30 border border-[#B3124F]/15 overflow-x-auto">
         {TABS.map((tab) => (
           <PremiumButtonV3
             key={tab.id}
@@ -370,7 +370,7 @@ function PerfilContent() {
             </div>
           )}
 
-          <div className="mt-6 pt-6 border-t border-[#C2185B]/15">
+          <div className="mt-6 pt-6 border-t border-[#B3124F]/15">
             <PremiumButtonV3 onClick={handleSave}>
               Salvar alterações
             </PremiumButtonV3>
