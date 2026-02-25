@@ -20,15 +20,24 @@ body {
 }
 
 body {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-weight: 400;
   background: linear-gradient(180deg, #FFF1F4 0%, #FFFFFF 50%, #FFF8F9 100%);
   background-attachment: fixed;
   color: var(--premium-text-primary, #1C1C1C);
+  line-height: 1.6;
 }
 
-/* Tipografia: títulos com Playfair Display */
+/* Tipografia premium: headings peso 600, body 400 */
 h1, h2, h3, h4, h5, h6 {
-  font-family: 'Playfair Display', serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+/* Espaçamento vertical generoso */
+section + section {
+  margin-top: 2rem;
 }
 
 a {

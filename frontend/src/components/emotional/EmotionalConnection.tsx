@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { PremiumButton } from '@/components/ui/PremiumButton';
-import { PremiumCard } from '@/components/ui/PremiumCard';
+import { PremiumButtonV3 } from '@/premium/PremiumButtonV3';
+import { GlassCardV2 } from '@/premium/GlassCardV2';
 
 const STORAGE_KEY = 'maternilove-emotional-history';
 
@@ -138,7 +138,7 @@ export function EmotionalConnection({ week = 24 }: { week?: number }) {
   }, []);
 
   return (
-    <PremiumCard hover={false}>
+    <GlassCardV2>
       <div className="p-6 space-y-4">
         <h3 className="font-title text-lg font-semibold text-premium-text-primary">
           Conexão emocional
@@ -161,7 +161,7 @@ export function EmotionalConnection({ week = 24 }: { week?: number }) {
 
         {isComplete && (
           <div className="pt-2 animate-fade-in-up">
-            <PremiumButton onClick={handleRespond}>Responder</PremiumButton>
+            <PremiumButtonV3 onClick={handleRespond}>Responder</PremiumButtonV3>
           </div>
         )}
 
@@ -207,12 +207,12 @@ export function EmotionalConnection({ week = 24 }: { week?: number }) {
                   className="w-full px-4 py-3 rounded-xl border border-premium-primary/20 text-premium-text-primary placeholder:text-premium-text-secondary/60 focus:outline-none focus:ring-2 focus:ring-premium-primary/50 resize-none"
                 />
                 <div className="flex gap-3 mt-4">
-                  <PremiumButton onClick={handleSubmit} disabled={!userInput.trim()}>
+                  <PremiumButtonV3 onClick={handleSubmit} disabled={!userInput.trim()}>
                     Enviar
-                  </PremiumButton>
-                  <PremiumButton variant="ghost" onClick={handleCloseModal}>
+                  </PremiumButtonV3>
+                  <PremiumButtonV3 variant="ghost" onClick={handleCloseModal}>
                     Fechar
-                  </PremiumButton>
+                  </PremiumButtonV3>
                 </div>
               </>
             ) : (
@@ -220,14 +220,14 @@ export function EmotionalConnection({ week = 24 }: { week?: number }) {
                 <div className="p-4 rounded-xl bg-premium-soft-bg/50 text-premium-text-primary text-sm leading-relaxed">
                   {response}
                 </div>
-                <PremiumButton onClick={handleCloseModal} className="mt-4">
+                <PremiumButtonV3 onClick={handleCloseModal} className="mt-4">
                   Fechar
-                </PremiumButton>
+                </PremiumButtonV3>
               </>
             )}
           </div>
         </div>
       )}
-    </PremiumCard>
+    </GlassCardV2>
   );
 }

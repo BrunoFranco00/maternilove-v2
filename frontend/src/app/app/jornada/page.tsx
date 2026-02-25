@@ -3,8 +3,8 @@
 import { useState } from 'react';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { RoleGuard } from '@/components/guards/RoleGuard';
-import { CardPremium } from '@/components/ui/CardPremium';
-import { ButtonPremium } from '@/components/ui/ButtonPremium';
+import { GlassCardV2 } from '@/premium/GlassCardV2';
+import { PremiumButtonV3 } from '@/premium/PremiumButtonV3';
 import { Section } from '@/components/ui/Section';
 import { EmotionalConnection } from '@/components/emotional/EmotionalConnection';
 
@@ -61,23 +61,23 @@ function JornadaContent() {
 
       {/* Card Diário Funcional */}
       <Section title="Diário" subtitle="Registre seus momentos do dia">
-        <CardPremium>
+        <GlassCardV2>
           <div className="p-6 space-y-4">
             <textarea
               value={dailyNote}
               onChange={(e) => setDailyNote(e.target.value)}
               placeholder="Como foi seu dia? O que você sentiu?"
               rows={4}
-              className="w-full px-4 py-3 rounded-ml-lg border border-ml-rosa-200/50 bg-ml-rosa-50/50 text-text-primary placeholder:text-text-secondary/70 focus:outline-none focus:ring-2 focus:ring-ml-rosa-300/50 focus:border-ml-rosa-300 transition-all duration-200 resize-none"
+              className="w-full px-4 py-3 rounded-lg border border-[#C2185B]/20 bg-[#FFF1F4]/30 text-[#1C1C1C] placeholder:text-[#5F5F5F]/70 focus:outline-none focus:ring-2 focus:ring-[#C2185B]/30 focus:border-[#C2185B]/40 transition-all duration-200 resize-none"
             />
             <div className="flex items-center gap-3">
-              <ButtonPremium
+              <PremiumButtonV3
                 onClick={handleSaveDay}
                 disabled={!dailyNote.trim()}
                 className="disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Salvar dia
-              </ButtonPremium>
+              </PremiumButtonV3>
               {savedFeedback && (
                 <span className="text-sm text-ml-rosa-600 font-medium animate-fade-in-up">
                   ✓ Dia salvo com sucesso
@@ -85,21 +85,21 @@ function JornadaContent() {
               )}
             </div>
           </div>
-        </CardPremium>
+        </GlassCardV2>
       </Section>
 
       {/* Sugestões do Dia */}
       <Section title="Sugestões do dia">
         <div className="grid md:grid-cols-3 gap-4">
           {DAILY_SUGGESTIONS.map((item, i) => (
-            <CardPremium key={i}>
+            <GlassCardV2 key={i}>
               <div className="p-5">
-                <h3 className="font-semibold text-ml-rosa-600 mb-2">
+                <h3 className="font-semibold text-[#C2185B] mb-2">
                   {item.title}
                 </h3>
-                <p className="text-sm text-text-secondary">{item.text}</p>
+                <p className="text-sm text-[#5F5F5F]">{item.text}</p>
               </div>
-            </CardPremium>
+            </GlassCardV2>
           ))}
         </div>
       </Section>
@@ -107,24 +107,24 @@ function JornadaContent() {
       {/* Histórico */}
       <Section title="Histórico" subtitle="Suas notas salvas">
         {savedNotes.length === 0 ? (
-          <CardPremium hover={false}>
+          <GlassCardV2>
             <div className="p-8 text-center">
-              <p className="text-text-secondary text-sm">
+              <p className="text-[#5F5F5F] text-sm">
                 Nenhuma nota salva ainda. Registre seu primeiro dia acima.
               </p>
             </div>
-          </CardPremium>
+          </GlassCardV2>
         ) : (
           <div className="space-y-3">
             {savedNotes.map((note, i) => (
-              <CardPremium key={i} hover={false}>
+              <GlassCardV2 key={i}>
                 <div className="p-5 flex flex-col sm:flex-row sm:items-center gap-3">
-                  <span className="text-xs text-ml-rosa-600 font-medium">
+                  <span className="text-xs text-[#C2185B] font-medium">
                     {note.date}
                   </span>
-                  <p className="text-sm text-text-primary flex-1">{note.text}</p>
+                  <p className="text-sm text-[#1C1C1C] flex-1">{note.text}</p>
                 </div>
-              </CardPremium>
+              </GlassCardV2>
             ))}
           </div>
         )}
@@ -138,7 +138,7 @@ function JornadaContent() {
             { label: '2º trimestre', desc: 'Semanas 13-26' },
             { label: '3º trimestre', desc: 'Semanas 27-40' },
           ].map((item, i) => (
-            <CardPremium key={i} hover={false}>
+            <GlassCardV2 key={i}>
               <div className="p-4 flex items-center gap-4">
                 <div
                   className={`w-2 h-2 rounded-full ${
@@ -156,13 +156,13 @@ function JornadaContent() {
                   }`}
                 />
                 <div>
-                  <p className="text-sm font-medium text-text-primary">
+                  <p className="text-sm font-medium text-[#1C1C1C]">
                     {item.label}
                   </p>
-                  <p className="text-xs text-text-secondary">{item.desc}</p>
+                  <p className="text-xs text-[#5F5F5F]">{item.desc}</p>
                 </div>
               </div>
-            </CardPremium>
+            </GlassCardV2>
           ))}
         </div>
       </Section>

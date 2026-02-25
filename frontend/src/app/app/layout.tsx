@@ -1,25 +1,15 @@
 'use client';
 
-import { AppNavigation } from '@/components/layout/AppNavigation';
+import { PremiumLayout } from '@/premium/PremiumLayout';
 
 /**
  * Layout da plataforma logada (/app/*)
- * Sidebar desktop + bottom nav mobile — visual LinkedIn + Notion + Apple
+ * Premium Visual System — radial gradient, noise, GlassCardV2, LogoPremiumV3
  */
 export default function AppLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <div className="min-h-screen bg-ml-bg flex">
-      {/* Sidebar Desktop */}
-      <AppNavigation />
-
-      {/* Conteúdo principal */}
-      <main className="flex-1 md:ml-64 pb-16 md:pb-0 px-4 sm:px-6 py-6 sm:py-8">
-        {children}
-      </main>
-    </div>
-  );
+  return <PremiumLayout>{children}</PremiumLayout>;
 }

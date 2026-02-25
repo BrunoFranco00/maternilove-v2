@@ -2,16 +2,12 @@
 
 import { ReactNode } from 'react';
 import { PremiumSidebar } from './PremiumSidebar';
-import { PremiumTopbar } from './PremiumTopbar';
+import { PremiumTopbar, PremiumBottomNav } from './PremiumTopbar';
 
 interface PremiumLayoutProps {
   children: ReactNode;
 }
 
-/**
- * Noise texture - SVG base64 leve para overlay
- * https://css-tricks.com/svg-filters-for-theming/
- */
 const NOISE_SVG = `data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E`;
 
 export function PremiumLayout({ children }: PremiumLayoutProps) {
@@ -39,9 +35,9 @@ export function PremiumLayout({ children }: PremiumLayoutProps) {
         <PremiumTopbar />
         <main className="flex-1 overflow-auto">
           <div
-            className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 md:px-8 py-8 md:py-12"
+            className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 md:px-8 pb-20 md:pb-12"
             style={{
-              paddingTop: '32px',
+              paddingTop: '48px',
               paddingBottom: '48px',
             }}
           >
@@ -51,6 +47,7 @@ export function PremiumLayout({ children }: PremiumLayoutProps) {
           </div>
         </main>
       </div>
+      <PremiumBottomNav />
     </div>
   );
 }

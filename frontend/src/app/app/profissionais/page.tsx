@@ -2,16 +2,16 @@
 
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { RoleGuard } from '@/components/guards/RoleGuard';
-import { CardPremium } from '@/components/ui/CardPremium';
+import { GlassCardV2 } from '@/premium/GlassCardV2';
 
 function ProfissionaisContent() {
   return (
     <div className="p-8 space-y-6 max-w-5xl mx-auto">
       <div>
-        <h1 className="text-2xl md:text-3xl font-semibold text-text-primary">
+        <h1 className="text-2xl md:text-3xl font-semibold text-[#1C1C1C]">
           Profissionais
         </h1>
-        <p className="text-text-secondary mt-1">
+        <p className="text-[#5F5F5F] mt-1">
           Encontre especialistas para acompanhar sua gestação
         </p>
       </div>
@@ -23,13 +23,13 @@ function ProfissionaisContent() {
           { titulo: 'Nutricionista', desc: 'Alimentação na gestação' },
           { titulo: 'Psicólogo', desc: 'Saúde emocional' },
         ].map((item, i) => (
-          <CardPremium key={i}>
+          <GlassCardV2 key={i}>
             <div className="p-6">
-              <div className="w-14 h-14 rounded-full bg-ml-rosa-200 mb-4" />
-              <h3 className="font-semibold text-text-primary">{item.titulo}</h3>
-              <p className="text-sm text-text-secondary mt-1">{item.desc}</p>
+              <div className="w-14 h-14 rounded-full bg-[#FFF1F4] mb-4" />
+              <h3 className="font-semibold text-[#1C1C1C]">{item.titulo}</h3>
+              <p className="text-sm text-[#5F5F5F] mt-1">{item.desc}</p>
             </div>
-          </CardPremium>
+          </GlassCardV2>
         ))}
       </div>
     </div>

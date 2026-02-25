@@ -3,9 +3,9 @@
 import { useState } from 'react';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { RoleGuard } from '@/components/guards/RoleGuard';
-import { CardPremium } from '@/components/ui/CardPremium';
+import { GlassCardV2 } from '@/premium/GlassCardV2';
 import { AvatarPremium } from '@/components/ui/AvatarPremium';
-import { ButtonPremium } from '@/components/ui/ButtonPremium';
+import { PremiumButtonV3 } from '@/premium/PremiumButtonV3';
 
 type TabId = 'gestacional' | 'saude' | 'estilo' | 'emocional';
 
@@ -155,7 +155,7 @@ function PerfilContent() {
       </div>
 
       {/* Avatar + Progress */}
-      <CardPremium hover={false}>
+      <GlassCardV2>
         <div className="p-6 flex flex-col sm:flex-row items-start sm:items-center gap-6">
           <AvatarPremium size="lg" />
           <div className="flex-1 w-full">
@@ -168,41 +168,35 @@ function PerfilContent() {
             <div>
               <div className="flex justify-between text-sm mb-1.5">
                 <span className="text-text-secondary">Preenchimento</span>
-                <span className="font-medium text-ml-rosa-600">{progress}%</span>
+                <span className="font-medium text-[#C2185B]">{progress}%</span>
               </div>
-              <div className="h-2 rounded-full bg-ml-rosa-100 overflow-hidden">
+              <div className="h-2 rounded-full bg-[#FFF1F4] overflow-hidden">
                 <div
-                  className="h-full bg-ml-rosa-400 rounded-full transition-all duration-300"
+                  className="h-full bg-[#C2185B] rounded-full transition-all duration-300"
                   style={{ width: `${progress}%` }}
                 />
               </div>
             </div>
           </div>
         </div>
-      </CardPremium>
+      </GlassCardV2>
 
       {/* Tabs */}
-      <div className="flex gap-1 p-1 rounded-ml-lg bg-ml-rosa-50 border border-ml-rosa-200/30 overflow-x-auto">
+      <div className="flex gap-1 p-1 rounded-xl bg-[#FFF1F4]/30 border border-[#C2185B]/15 overflow-x-auto">
         {TABS.map((tab) => (
-          <button
+          <PremiumButtonV3
             key={tab.id}
+            variant={activeTab === tab.id ? 'primary' : 'ghost'}
             onClick={() => setActiveTab(tab.id)}
-            className={`
-              px-4 py-2.5 rounded-ml-md text-sm font-medium whitespace-nowrap transition-all
-              ${
-                activeTab === tab.id
-                  ? 'bg-white text-ml-rosa-600 shadow-ml-sm'
-                  : 'text-text-secondary hover:text-text-primary'
-              }
-            `}
+            className="whitespace-nowrap"
           >
             {tab.label}
-          </button>
+          </PremiumButtonV3>
         ))}
       </div>
 
       {/* Form Sections */}
-      <CardPremium hover={false}>
+      <GlassCardV2>
         <div className="p-6 md:p-8">
           {activeTab === 'gestacional' && (
             <div className="space-y-4">
@@ -376,10 +370,10 @@ function PerfilContent() {
             </div>
           )}
 
-          <div className="mt-6 pt-6 border-t border-ml-rosa-200/30">
-            <ButtonPremium onClick={handleSave}>
+          <div className="mt-6 pt-6 border-t border-[#C2185B]/15">
+            <PremiumButtonV3 onClick={handleSave}>
               Salvar alterações
-            </ButtonPremium>
+            </PremiumButtonV3>
             {savedFeedback && (
               <span className="ml-3 text-sm text-ml-rosa-600 font-medium">
                 ✓ Salvo
@@ -387,7 +381,7 @@ function PerfilContent() {
             )}
           </div>
         </div>
-      </CardPremium>
+      </GlassCardV2>
     </div>
   );
 }

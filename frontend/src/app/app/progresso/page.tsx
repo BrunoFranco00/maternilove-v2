@@ -2,7 +2,7 @@
 
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { RoleGuard } from '@/components/guards/RoleGuard';
-import { CardPremium } from '@/components/ui/CardPremium';
+import { GlassCardV2 } from '@/premium/GlassCardV2';
 
 function ProgressoContent() {
   const semanaAtual = 24;
@@ -18,34 +18,34 @@ function ProgressoContent() {
         </p>
       </div>
 
-      <CardPremium>
+      <GlassCardV2>
         <div className="relative overflow-hidden p-8">
-          <h3 className="font-semibold text-text-primary mb-2">
+          <h3 className="font-semibold text-[#1C1C1C] mb-2">
             Semana atual
           </h3>
-          <p className="text-3xl font-bold text-ml-rosa-600 mb-4">
+          <p className="text-3xl font-bold text-[#C2185B] mb-4">
             Semana {semanaAtual}
           </p>
-          <p className="text-sm text-text-secondary mb-6">
+          <p className="text-sm text-[#5F5F5F] mb-6">
             Dados fictícios para demonstração
           </p>
           <div
-            className="absolute -right-8 -bottom-8 w-32 h-32 rounded-full bg-gradient-to-br from-ml-rosa-200 to-ml-rosa-300 opacity-50 blur-2xl"
+            className="absolute -right-8 -bottom-8 w-32 h-32 rounded-full bg-gradient-to-br from-[#FFF1F4] to-[#F8BBD0] opacity-50 blur-2xl"
             aria-hidden
           />
         </div>
-      </CardPremium>
+      </GlassCardV2>
 
-      <CardPremium hover={false}>
+      <GlassCardV2>
         <div className="p-6">
-          <h3 className="font-medium text-text-primary mb-4">
+          <h3 className="font-medium text-[#1C1C1C] mb-4">
             Placeholder visual 3D
           </h3>
-          <div className="h-40 rounded-ml-lg bg-gradient-to-br from-ml-rosa-100 to-ml-rosa-200 flex items-center justify-center">
-            <span className="text-text-secondary text-sm">Gráfico em breve</span>
+          <div className="h-40 rounded-xl bg-gradient-to-br from-[#FFF1F4] to-[#FFF8F9] flex items-center justify-center border border-[#C2185B]/10">
+            <span className="text-[#5F5F5F] text-sm">Gráfico em breve</span>
           </div>
         </div>
-      </CardPremium>
+      </GlassCardV2>
     </div>
   );
 }
