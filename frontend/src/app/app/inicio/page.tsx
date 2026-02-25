@@ -1,12 +1,14 @@
 'use client';
 
 import Link from 'next/link';
+import { useEffect, useRef, useState } from 'react';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { RoleGuard } from '@/components/guards/RoleGuard';
 import { GlassCardV2 } from '@/premium/GlassCardV2';
 import { PremiumButtonV3 } from '@/premium/PremiumButtonV3';
 import { getArticlesForPhase } from '@/data/articles';
 import type { Article } from '@/data/articles';
+import { shadows } from '@/premium/foundation';
 
 const HERO_IMAGES: Record<string, string> = {
   gravidez: 'https://images.unsplash.com/photo-1584515933487-779824d29309?w=1200&q=80',
@@ -20,12 +22,42 @@ function getHeroImage(category: string): string {
   return HERO_IMAGES[category] || HERO_IMAGES.gravidez;
 }
 
+function useFadeIn() {
+  const ref = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const ob = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting) setVisible(true);
+      },
+      { threshold: 0.1, rootMargin: '0px 0px -40px 0px' }
+    );
+    ob.observe(el);
+    return () => ob.disconnect();
+  }, []);
+
+  return { ref, visible };
+}
+
 function ArticleHero({ article }: { article: Article }) {
   const heroImg = getHeroImage(article.category);
+  const { ref, visible } = useFadeIn();
+
   return (
-    <Link href={`/app/conteudo/${article.slug}`}>
-      <GlassCardV2 className="overflow-hidden p-0">
-        <div className="relative aspect-[21/9] w-full overflow-hidden">
+    <Link href={`/app/conteudo/${article.slug}`} className="block">
+      <div
+        ref={ref}
+        className="rounded-[24px] overflow-hidden transition-opacity duration-250 md:hover:opacity-95"
+        style={{
+          boxShadow: shadows.depthMedium,
+          opacity: visible ? 1 : 0,
+          transition: 'opacity 250ms ease',
+        }}
+      >
+        <div className="relative aspect-[4/3] sm:aspect-[21/9] w-full overflow-hidden">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={heroImg}
@@ -33,51 +65,59 @@ function ArticleHero({ article }: { article: Article }) {
             className="h-full w-full object-cover"
           />
         </div>
-        <div className="p-8 md:p-12 space-y-6">
+        <div className="p-6 space-y-4">
           <span className="text-xs font-medium text-[#C2185B] uppercase tracking-[0.1em]">
             {article.category}
           </span>
-          <h2
-            className="text-3xl md:text-4xl lg:text-5xl font-semibold text-[#1C1C1C] leading-tight"
-            style={{ fontFamily: 'Georgia, serif' }}
-          >
+          <h2 className="text-2xl font-semibold text-[#1C1C1C] leading-tight" style={{ fontSize: '24px', fontWeight: 600 }}>
             {article.title}
           </h2>
-          <p className="text-lg text-[#5F5F5F] leading-relaxed line-clamp-2">
+          <p className="text-[#5F5F5F] text-base leading-relaxed line-clamp-2">
             {article.excerpt}
           </p>
           <PremiumButtonV3 variant="ghost">Ler mais</PremiumButtonV3>
         </div>
-      </GlassCardV2>
+      </div>
     </Link>
   );
 }
 
 function ArticleCard({ article }: { article: Article }) {
   const heroImg = getHeroImage(article.category);
+  const { ref, visible } = useFadeIn();
+
   return (
     <Link href={`/app/conteudo/${article.slug}`}>
-      <GlassCardV2 className="overflow-hidden p-0">
-        <div className="relative aspect-[4/3] overflow-hidden">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={heroImg}
-            alt=""
-            className="h-full w-full object-cover"
-          />
-        </div>
-        <div className="p-5">
-          <span className="text-xs font-medium text-[#C2185B] uppercase tracking-wide">
-            {article.category}
-          </span>
-          <h3 className="font-semibold text-[#1C1C1C] mt-2 line-clamp-2 text-lg">
-            {article.title}
-          </h3>
-          <p className="text-sm text-[#5F5F5F] mt-1 line-clamp-2">
-            {article.excerpt}
-          </p>
-        </div>
-      </GlassCardV2>
+      <div
+        ref={ref}
+        className="rounded-[20px] overflow-hidden transition-all duration-250 md:hover:shadow-[0_20px_60px_rgba(142,14,58,0.25)]"
+        style={{
+          opacity: visible ? 1 : 0,
+          transition: 'opacity 250ms ease',
+        }}
+      >
+        <GlassCardV2 className="p-0 flex flex-row overflow-hidden">
+          <div className="w-24 sm:w-28 shrink-0 aspect-square sm:aspect-[4/3]">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={heroImg}
+              alt=""
+              className="h-full w-full object-cover"
+            />
+          </div>
+          <div className="flex-1 min-w-0 p-4 flex flex-col justify-center">
+            <span className="text-xs font-medium text-[#C2185B] uppercase tracking-wide">
+              {article.category}
+            </span>
+            <h3 className="font-semibold text-[#1C1C1C] mt-1 line-clamp-2 text-base">
+              {article.title}
+            </h3>
+            <p className="text-sm text-[#5F5F5F] mt-0.5 line-clamp-2">
+              {article.excerpt}
+            </p>
+          </div>
+        </GlassCardV2>
+      </div>
     </Link>
   );
 }
@@ -89,77 +129,63 @@ function InicioContent() {
   const [heroArticle, ...gridArticles] = artigos;
 
   return (
-    <div className="space-y-12 md:space-y-16 max-w-6xl mx-auto">
+    <div className="space-y-6 max-w-2xl mx-auto">
       {/* Hero bem-vinda */}
-      <GlassCardV2>
+      <GlassCardV2 className="transition-opacity duration-250">
         <div className="relative z-10">
-          <h1
-            className="text-2xl md:text-4xl font-semibold text-[#1C1C1C] mb-1"
-            style={{ fontFamily: 'Georgia, serif' }}
-          >
+          <h1 className="text-2xl font-semibold text-[#1C1C1C] mb-1">
             Bem-vinda, {nome}
           </h1>
-          <p className="text-[#5F5F5F] text-base md:text-lg">
+          <p className="text-[#5F5F5F] text-base">
             Hoje você está com {semanas} semanas.
           </p>
         </div>
-        <div
-          className="absolute -right-8 -top-8 w-40 h-40 rounded-full bg-gradient-to-br from-[#C2185B]/20 to-[#FFF1F4] opacity-60 blur-2xl"
-          aria-hidden
-        />
       </GlassCardV2>
 
       {/* Grid: Check-in + Progresso */}
-      <div className="grid md:grid-cols-2 gap-6 md:gap-8">
-        <GlassCardV2>
-          <h2 className="font-semibold text-lg text-[#1C1C1C] mb-2">
+      <div className="grid grid-cols-2 gap-4">
+        <GlassCardV2 className="transition-opacity duration-250">
+          <h2 className="font-semibold text-base text-[#1C1C1C] mb-2">
             Como você está?
           </h2>
-          <p className="text-[#5F5F5F] text-sm mb-6">
-            Registre seu check-in emocional
+          <p className="text-[#5F5F5F] text-xs mb-4">
+            Check-in emocional
           </p>
           <Link href="/app/check-in">
-            <PremiumButtonV3>Fazer check-in</PremiumButtonV3>
+            <PremiumButtonV3>Check-in</PremiumButtonV3>
           </Link>
         </GlassCardV2>
 
         <Link href="/app/progresso">
-          <GlassCardV2>
-            <h2 className="font-semibold text-lg text-[#1C1C1C] mb-2">
+          <GlassCardV2 className="transition-opacity duration-250">
+            <h2 className="font-semibold text-base text-[#1C1C1C] mb-2">
               Progresso
             </h2>
-            <p className="text-[#5F5F5F] text-sm">
-              Semana {semanas} da gestação
+            <p className="text-[#5F5F5F] text-xs">
+              Semana {semanas}
             </p>
-            <div
-              className="absolute bottom-0 right-0 w-28 h-28 rounded-full bg-gradient-to-br from-[#C2185B]/20 to-[#FFF1F4] opacity-50 blur-xl -mr-8 -mb-8"
-              aria-hidden
-            />
           </GlassCardV2>
         </Link>
       </div>
 
-      {/* Feed editorial premium */}
-      <section className="space-y-8">
-        <div className="space-y-2">
-          <h2
-            className="text-2xl md:text-3xl font-semibold text-[#1C1C1C]"
-            style={{ fontFamily: 'Georgia, serif' }}
-          >
+      {/* Feed editorial mobile */}
+      <section className="space-y-6">
+        <div className="space-y-1">
+          <h2 className="text-xl font-semibold text-[#1C1C1C]">
             Para você hoje
           </h2>
           <p className="text-[#5F5F5F] text-sm">
-            Conteúdos selecionados para sua fase
+            Conteúdos para sua fase
           </p>
         </div>
 
         {heroArticle && (
-          <div className="mb-12">
+          <div className="space-y-6" style={{ marginBottom: '24px' }}>
             <ArticleHero article={heroArticle} />
           </div>
         )}
 
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="space-y-4">
           {gridArticles.map((artigo) => (
             <ArticleCard key={artigo.id} article={artigo} />
           ))}
@@ -167,11 +193,11 @@ function InicioContent() {
       </section>
 
       {/* Acesso rápido */}
-      <GlassCardV2 className="bg-[#FFF1F4]/30 border-[#C2185B]/20">
-        <h2 className="font-semibold text-lg text-[#1C1C1C] mb-4">
+      <GlassCardV2 className="bg-[#FFF1F4]/30 border-[#C2185B]/20 transition-opacity duration-250">
+        <h2 className="font-semibold text-base text-[#1C1C1C] mb-3">
           Acesso rápido
         </h2>
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap gap-2">
           <Link href="/app/relief">
             <PremiumButtonV3 variant="ghost">Recursos</PremiumButtonV3>
           </Link>

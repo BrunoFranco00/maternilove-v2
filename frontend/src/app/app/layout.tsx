@@ -1,15 +1,19 @@
 'use client';
 
-import { PremiumLayout } from '@/premium/PremiumLayout';
+import { MobileLayout } from '@/premium/MobileLayout';
 
 /**
  * Layout da plataforma logada (/app/*)
- * Premium Visual System — radial gradient, noise, GlassCardV2, LogoPremiumV3
+ * Mobile-first premium — TopBar, main, BottomNav, radial gradient, noise
  */
 export default function AppLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return <PremiumLayout>{children}</PremiumLayout>;
+  return (
+    <MobileLayout>
+      {children}
+    </MobileLayout>
+  );
 }
