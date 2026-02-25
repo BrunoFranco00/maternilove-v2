@@ -6,6 +6,7 @@ import { GlassCardV2 } from '@/premium/GlassCardV2';
 import { PremiumButtonV3 } from '@/premium/PremiumButtonV3';
 import { CinematicProgressHero } from '@/components/CinematicProgressHero';
 import { ProgressTimeline } from '@/components/ProgressTimeline';
+import { mockMaternalContext } from '@/modules/feed/mock/maternalContext.mock';
 import {
   getEstimatedLength,
   getEstimatedWeight,
@@ -30,7 +31,7 @@ function DataRow({
 }
 
 function ProgressoContent() {
-  const semanaAtual = 24;
+  const semanaAtual = mockMaternalContext.gestationalWeek ?? 24;
 
   return (
     <div className="space-y-6 max-w-2xl mx-auto pb-8">

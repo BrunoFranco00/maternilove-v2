@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { FetalIllustration2D } from './FetalIllustration2D';
+import { getCategoryImage } from '@/lib/categoryImages';
 import Link from 'next/link';
 
 interface JourneyHeroCardProps {
@@ -44,8 +44,13 @@ export function JourneyHeroCard({
           {emotionalPhrase}
         </p>
 
-        <div className="w-32 h-32 mx-auto">
-          <FetalIllustration2D />
+        <div className="relative w-full aspect-[16/10] rounded-[16px] overflow-hidden">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={getCategoryImage('GRAVIDEZ')}
+            alt=""
+            className="w-full h-full object-cover"
+          />
         </div>
 
         <Link

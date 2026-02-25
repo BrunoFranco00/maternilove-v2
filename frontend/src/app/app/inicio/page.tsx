@@ -8,19 +8,10 @@ import { GlassCardV2 } from '@/premium/GlassCardV2';
 import { PremiumButtonV3 } from '@/premium/PremiumButtonV3';
 import { getArticlesForPhase } from '@/data/articles';
 import type { Article } from '@/data/articles';
+import { getCategoryImage } from '@/lib/categoryImages';
+import { getLocalCheckinState } from '@/lib/checkin/localCheckinStorage';
+import { mockMaternalContext } from '@/modules/feed/mock/maternalContext.mock';
 import { shadows } from '@/premium/foundation';
-
-const HERO_IMAGES: Record<string, string> = {
-  gravidez: 'https://images.unsplash.com/photo-1584515933487-779824d29309?w=1200&q=80',
-  'recem-nascido': 'https://images.unsplash.com/photo-1519689680058-324335c77eba?w=1200&q=80',
-  '1-2 anos': 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=1200&q=80',
-  '3-5 anos': 'https://images.unsplash.com/photo-1494597564530-871f2b93ac55?w=1200&q=80',
-  emocional: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=1200&q=80',
-};
-
-function getHeroImage(category: string): string {
-  return HERO_IMAGES[category] || HERO_IMAGES.gravidez;
-}
 
 function useFadeIn() {
   const ref = useRef<HTMLDivElement>(null);
@@ -43,7 +34,7 @@ function useFadeIn() {
 }
 
 function ArticleHero({ article }: { article: Article }) {
-  const heroImg = getHeroImage(article.category);
+  const heroImg = getCategoryImage(article.category);
   const { ref, visible } = useFadeIn();
 
   return (
@@ -83,7 +74,7 @@ function ArticleHero({ article }: { article: Article }) {
 }
 
 function ArticleCard({ article }: { article: Article }) {
-  const heroImg = getHeroImage(article.category);
+  const heroImg = getCategoryImage(article.category);
   const { ref, visible } = useFadeIn();
 
   return (
@@ -124,12 +115,36 @@ function ArticleCard({ article }: { article: Article }) {
 
 function InicioContent() {
   const nome = 'Mãe';
-  const semanas = 24;
+  const semanas = mockMaternalContext.gestationalWeek ?? 24;
   const artigos = getArticlesForPhase(semanas, 7);
   const [heroArticle, ...gridArticles] = artigos;
+  const [localCheckin, setLocalCheckin] = useState<ReturnType<typeof getLocalCheckinState> | null>(null);
+
+  useEffect(() => {
+    setLocalCheckin(getLocalCheckinState());
+  }, []);
+
+  const streak = localCheckin?.streakCount ?? 0;
+  const points = localCheckin?.points ?? 0;
 
   return (
-    <div className="space-y-6 max-w-2xl mx-auto">
+    <div className="space-y-6 max-w-2xl mx-auto px-4 pb-12">
+      {/* Mini-dashboard: 3 cards */}
+      <div className="grid grid-cols-3 gap-3">
+        <GlassCardV2 className="p-4 text-center">
+          <p className="text-xs text-[#5F5F5F] uppercase tracking-wide">Semana</p>
+          <p className="text-lg font-semibold text-[#B3124F]">{semanas}</p>
+        </GlassCardV2>
+        <GlassCardV2 className="p-4 text-center">
+          <p className="text-xs text-[#5F5F5F] uppercase tracking-wide">Sequência</p>
+          <p className="text-lg font-semibold text-[#1C1C1C]">{streak} dia(s)</p>
+        </GlassCardV2>
+        <GlassCardV2 className="p-4 text-center">
+          <p className="text-xs text-[#5F5F5F] uppercase tracking-wide">Pontos</p>
+          <p className="text-lg font-semibold text-[#1C1C1C]">{points}</p>
+        </GlassCardV2>
+      </div>
+
       {/* Hero bem-vinda */}
       <GlassCardV2 className="transition-opacity duration-250">
         <div className="relative z-10">

@@ -11,6 +11,8 @@ const AUTH_COOKIE = 'maternilove-session';
 
 /** Quando true, protege /app/* e redireciona não autenticados para /login */
 const AUTH_MIDDLEWARE_ENABLED = process.env.AUTH_MIDDLEWARE_ENABLED === 'true';
+/** Modo demo/dev: bypass de auth para todas as rotas /app/* */
+const AUTH_DISABLED = process.env.NEXT_PUBLIC_AUTH_DISABLED === 'true';
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -19,7 +21,7 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  if (!AUTH_MIDDLEWARE_ENABLED) {
+  if (!AUTH_MIDDLEWARE_ENABLED || AUTH_DISABLED) {
     return NextResponse.next();
   }
 

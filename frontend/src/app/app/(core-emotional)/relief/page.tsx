@@ -1,6 +1,11 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { getCheckinResponseForRelief } from '@/lib/checkin/checkinResponseStorage';
+import { getLocalCheckinState } from '@/lib/checkin/localCheckinStorage';
+import { GlassCardV2 } from '@/premium/GlassCardV2';
+import { PremiumButtonV3 } from '@/premium/PremiumButtonV3';
 
 const RELIEF_RESOURCES = [
   { title: 'Meditação', icon: '🧘', description: 'Exercícios de respiração e relaxamento' },
@@ -10,34 +15,63 @@ const RELIEF_RESOURCES = [
 ] as const;
 
 export default function ReliefPage() {
-  const resources = useMemo(() => RELIEF_RESOURCES, []);
+  const [response, setResponse] = useState<ReturnType<typeof getCheckinResponseForRelief>>(null);
+  const [localState, setLocalState] = useState<ReturnType<typeof getLocalCheckinState> | null>(null);
+
+  useEffect(() => {
+    setResponse(getCheckinResponseForRelief());
+    setLocalState(getLocalCheckinState());
+  }, []);
 
   return (
     <div className="min-h-full p-4 md:p-8">
       <div className="max-w-2xl mx-auto space-y-6">
-        <div className="text-center space-y-2">
-          <h1 className="text-3xl md:text-4xl font-bold text-primary-600">
+        {response && (
+          <GlassCardV2 className="p-6 md:p-8 bg-gradient-to-br from-[#FFF1F4]/90 to-[#FFF8F9] border-[#B3124F]/20">
+            <h1 className="text-xl font-semibold text-[#1C1C1C] mb-2">
+              {response.title}
+            </h1>
+            <p className="text-[#5F5F5F] text-base leading-relaxed mb-4">
+              {response.message}
+            </p>
+            <p className="text-sm text-[#B3124F] font-medium mb-4">
+              Sugestão: {response.suggestionLabel}
+            </p>
+            {(localState?.streakCount ?? 0) > 0 && (
+              <p className="text-xs text-[#8E8E8E]">
+                Sequência: {localState?.streakCount} dia(s) • {localState?.points ?? 0} pts
+              </p>
+            )}
+          </GlassCardV2>
+        )}
+
+        <div className="space-y-1">
+          <h2 className="text-lg font-semibold text-[#1C1C1C]">
             Recursos de Suporte
-          </h1>
-          <p className="text-gray-600">
-            Recursos disponíveis
+          </h2>
+          <p className="text-[#5F5F5F] text-sm">
+            Conteúdos para seu bem-estar
           </p>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">
-          {resources.map((item, index) => (
-            <div
+          {RELIEF_RESOURCES.map((item, index) => (
+            <GlassCardV2
               key={index}
-              role="button"
-              tabIndex={0}
-              aria-label={`Acessar ${item.title}`}
-              className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary-400 focus:ring-offset-2 transition-shadow cursor-pointer"
+              className="p-6 transition-all duration-250 md:hover:-translate-y-1"
             >
-              <div className="text-4xl mb-3" aria-hidden="true">{item.icon}</div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">{item.title}</h3>
-              <p className="text-gray-600 text-sm">{item.description}</p>
-            </div>
+              <div className="text-3xl mb-3">{item.icon}</div>
+              <h3 className="text-lg font-semibold text-[#1C1C1C] mb-2">{item.title}</h3>
+              <p className="text-[#5F5F5F] text-sm mb-4">{item.description}</p>
+              <PremiumButtonV3 variant="ghost">Explorar</PremiumButtonV3>
+            </GlassCardV2>
           ))}
+        </div>
+
+        <div className="text-center">
+          <Link href="/app/check-in">
+            <PremiumButtonV3 variant="ghost">Novo check-in</PremiumButtonV3>
+          </Link>
         </div>
       </div>
     </div>

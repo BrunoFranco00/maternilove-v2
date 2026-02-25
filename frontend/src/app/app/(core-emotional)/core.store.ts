@@ -2,6 +2,12 @@ import { create } from 'zustand';
 import { apiClient } from '@/lib/api/client';
 import { API_ENDPOINTS } from '@/lib/api/endpoints';
 import { CheckInRequestDto, CheckInResponseDto } from '@/types/dto/checkin.dto';
+import { generateCheckinResponse } from '@/modules/checkin/CheckinResponseEngine';
+import { persistLocalCheckin } from '@/lib/checkin/localCheckinStorage';
+import { saveCheckinResponseForRelief } from '@/lib/checkin/checkinResponseStorage';
+import { mockMaternalContext } from '@/modules/feed/mock/maternalContext.mock';
+
+const AUTH_DISABLED = process.env.NEXT_PUBLIC_AUTH_DISABLED === 'true';
 
 interface CoreState {
   checkIn: (data: CheckInRequestDto) => Promise<CheckInResponseDto | null>;
@@ -18,6 +24,29 @@ export const useCoreStore = create<CoreState>((set) => ({
   checkIn: async (data: CheckInRequestDto) => {
     set({ isLoading: true, error: null });
     try {
+      if (AUTH_DISABLED) {
+        const week = mockMaternalContext.gestationalWeek ?? 24;
+        const phase = mockMaternalContext.mode;
+        const engineOutput = generateCheckinResponse({
+          weekNumber: week,
+          mood: data.mood,
+          phase,
+          riskFlags: mockMaternalContext.riskFlags as string[],
+        });
+        persistLocalCheckin(data.mood);
+        saveCheckinResponseForRelief({
+          ...engineOutput,
+          mood: data.mood,
+        });
+        set({ isLoading: false });
+        return {
+          id: `local-${Date.now()}`,
+          userId: 'local-user',
+          mood: data.mood,
+          note: data.note,
+          createdAt: new Date().toISOString(),
+        };
+      }
       const response = await apiClient.post<CheckInResponseDto>(
         API_ENDPOINTS.CORE.CHECK_IN,
         data

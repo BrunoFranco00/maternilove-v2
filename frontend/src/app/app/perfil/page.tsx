@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useEffect } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { RoleGuard } from '@/components/guards/RoleGuard';
 import { GlassCardV2 } from '@/premium/GlassCardV2';
@@ -11,8 +12,11 @@ import { ProfileCompletionBar } from '@/modules/profile/components/ProfileComple
 import { ProfileSectionCard, type CompletionLevel } from '@/modules/profile/components/ProfileSectionCard';
 import { calculateProfileCompletion, type MockProfileData } from '@/modules/profile/mock/profileCompletion.mock';
 import { mockMaternalContext } from '@/modules/feed/mock/maternalContext.mock';
+import { loadLocalProfile, saveLocalProfile } from '@/lib/profile/localProfileStorage';
 
-type TabId = 'gestacional' | 'saude' | 'estilo' | 'emocional';
+const AUTH_DISABLED = process.env.NEXT_PUBLIC_AUTH_DISABLED === 'true';
+
+type TabId = 'gestacional' | 'saude' | 'estilo' | 'emocional' | 'pessoal' | 'filho';
 
 interface ProfileData {
   dataPrevistaParto: string;
@@ -32,6 +36,14 @@ interface ProfileData {
   nivelEstresse: string;
   redeApoio: string;
   acompanhamentoPsicologico: string;
+  fullName: string;
+  phone: string;
+  city: string;
+  state: string;
+  childName: string;
+  childSex: string;
+  childBirthDate: string;
+  childAgeMonths: string;
 }
 
 const TABS: { id: TabId; label: string }[] = [
@@ -39,6 +51,8 @@ const TABS: { id: TabId; label: string }[] = [
   { id: 'saude', label: 'Saúde' },
   { id: 'estilo', label: 'Estilo de Vida' },
   { id: 'emocional', label: 'Saúde Emocional' },
+  { id: 'pessoal', label: 'Dados Pessoais' },
+  { id: 'filho', label: 'Filho / Criança' },
 ];
 
 const INITIAL_DATA: ProfileData = {
@@ -59,6 +73,14 @@ const INITIAL_DATA: ProfileData = {
   nivelEstresse: '',
   redeApoio: '',
   acompanhamentoPsicologico: '',
+  fullName: '',
+  phone: '',
+  city: '',
+  state: '',
+  childName: '',
+  childSex: '',
+  childBirthDate: '',
+  childAgeMonths: '',
 };
 
 function toMockProfileData(data: ProfileData): MockProfileData {
@@ -82,8 +104,16 @@ function toMockProfileData(data: ProfileData): MockProfileData {
       stressLevel: data.nivelEstresse ? (data.nivelEstresse === 'baixo' ? 1 : data.nivelEstresse === 'moderado' ? 2 : 3) : null,
       supportNetwork: data.redeApoio ? (data.redeApoio === 'boa' ? 3 : data.redeApoio === 'limitada' ? 1 : 2) : null,
     },
-    child: null,
-    personal: null,
+    child: data.childName || data.childBirthDate || data.childAgeMonths
+      ? {
+          childName: data.childName || null,
+          birthDate: data.childBirthDate || null,
+          ageMonths: data.childAgeMonths ? parseInt(data.childAgeMonths, 10) || null : null,
+        }
+      : null,
+    personal: data.fullName || data.phone
+      ? { fullName: data.fullName || null, phone: data.phone || null }
+      : null,
   };
 }
 
@@ -92,6 +122,8 @@ function getSectionCompletion(data: ProfileData): Record<TabId, { level: Complet
   const saudeFilled = [data.tipoSanguineo, data.condicoesCronicas, data.alergias, data.medicamentos].filter(Boolean).length;
   const estiloFilled = [data.exercicios, data.alimentacao, data.horasSono, data.tabagismo, data.alcool].filter(Boolean).length;
   const emocionalFilled = [data.nivelEstresse, data.redeApoio, data.acompanhamentoPsicologico].filter(Boolean).length;
+  const pessoalFilled = [data.fullName, data.phone, data.city].filter(Boolean).length;
+  const filhoFilled = [data.childName, data.childSex, data.childBirthDate, data.childAgeMonths].filter(Boolean).length;
 
   return {
     gestacional: {
@@ -109,6 +141,14 @@ function getSectionCompletion(data: ProfileData): Record<TabId, { level: Complet
     emocional: {
       level: emocionalFilled >= 2 ? 'complete' : emocionalFilled >= 1 ? 'partial' : 'pending',
       description: emocionalFilled >= 2 ? 'Saúde emocional acompanhada' : emocionalFilled >= 1 ? 'Complete nível de estresse e rede de apoio' : 'Como você está se sentindo?',
+    },
+    pessoal: {
+      level: pessoalFilled >= 2 ? 'complete' : pessoalFilled >= 1 ? 'partial' : 'pending',
+      description: pessoalFilled >= 2 ? 'Dados pessoais completos' : pessoalFilled >= 1 ? 'Complete nome e contato' : 'Nome, telefone e localização',
+    },
+    filho: {
+      level: filhoFilled >= 2 ? 'complete' : filhoFilled >= 1 ? 'partial' : 'pending',
+      description: filhoFilled >= 2 ? 'Dados do filho registrados' : filhoFilled >= 1 ? 'Complete nome e data' : 'Nome, sexo e data de nascimento',
     },
   };
 }
@@ -170,10 +210,41 @@ function SelectField({
   );
 }
 
+const VALID_TABS: TabId[] = ['gestacional', 'saude', 'estilo', 'emocional', 'pessoal', 'filho'];
+
 function PerfilContent() {
-  const [activeTab, setActiveTab] = useState<TabId>('gestacional');
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const tabFromUrl = searchParams.get('tab') as TabId | null;
+  const initialTab = tabFromUrl && VALID_TABS.includes(tabFromUrl) ? tabFromUrl : 'gestacional';
+
+  const [activeTab, setActiveTab] = useState<TabId>(initialTab);
   const [data, setData] = useState<ProfileData>(INITIAL_DATA);
   const [savedFeedback, setSavedFeedback] = useState(false);
+  const [toastVisible, setToastVisible] = useState(false);
+
+  useEffect(() => {
+    if (tabFromUrl && VALID_TABS.includes(tabFromUrl)) {
+      setActiveTab(tabFromUrl);
+    }
+  }, [tabFromUrl]);
+
+  useEffect(() => {
+    if (AUTH_DISABLED) {
+      const local = loadLocalProfile();
+      setData((prev) => ({
+        ...prev,
+        fullName: local.fullName ?? '',
+        phone: local.phone ?? '',
+        city: local.city ?? '',
+        state: local.state ?? '',
+        childName: local.childName ?? '',
+        childSex: local.childSex ?? '',
+        childBirthDate: local.childBirthDate ?? '',
+        childAgeMonths: local.childAgeMonths ?? '',
+      }));
+    }
+  }, []);
 
   const mockData = toMockProfileData(data);
   const completion = calculateProfileCompletion({ ...mockData, stage: mockMaternalContext.mode });
@@ -183,9 +254,30 @@ function PerfilContent() {
     setData((prev) => ({ ...prev, [key]: value }));
   };
 
+  const goToTab = (tab: TabId) => {
+    setActiveTab(tab);
+    router.replace(`/app/perfil?tab=${tab}`, { scroll: false });
+  };
+
   const handleSave = () => {
+    if (AUTH_DISABLED) {
+      saveLocalProfile({
+        fullName: data.fullName,
+        phone: data.phone,
+        city: data.city,
+        state: data.state,
+        childName: data.childName,
+        childSex: data.childSex,
+        childBirthDate: data.childBirthDate,
+        childAgeMonths: data.childAgeMonths,
+      });
+    }
     setSavedFeedback(true);
-    setTimeout(() => setSavedFeedback(false), 2500);
+    setToastVisible(true);
+    setTimeout(() => {
+      setSavedFeedback(false);
+      setToastVisible(false);
+    }, 2500);
   };
 
   const stageLabel =
@@ -231,14 +323,14 @@ function PerfilContent() {
 
       {/* Seções modulares */}
       <div className="space-y-4">
-        {TABS.map((tab, i) => (
+        {TABS.map((tab) => (
           <ProfileSectionCard
             key={tab.id}
             title={tab.label}
             description={sectionStatus[tab.id].description}
             isComplete={sectionStatus[tab.id].level === 'complete'}
             completionLevel={sectionStatus[tab.id].level}
-            onEdit={() => setActiveTab(tab.id)}
+            onEdit={() => goToTab(tab.id)}
           />
         ))}
       </div>
@@ -254,7 +346,7 @@ function PerfilContent() {
             <PremiumButtonV3
               key={tab.id}
               variant={activeTab === tab.id ? 'primary' : 'ghost'}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => goToTab(tab.id)}
               className="whitespace-nowrap"
             >
               {tab.label}
@@ -318,6 +410,26 @@ function PerfilContent() {
               </div>
             )}
 
+            {activeTab === 'pessoal' && (
+              <div className="space-y-4">
+                <InputField label="Nome completo" value={data.fullName} onChange={(v) => update('fullName', v)} placeholder="Seu nome" />
+                <InputField label="Telefone" value={data.phone} onChange={(v) => update('phone', v)} placeholder="(11) 99999-9999" />
+                <InputField label="Cidade" value={data.city} onChange={(v) => update('city', v)} placeholder="Sua cidade" />
+                <InputField label="Estado" value={data.state} onChange={(v) => update('state', v)} placeholder="UF" />
+              </div>
+            )}
+
+            {activeTab === 'filho' && (
+              <div className="space-y-4">
+                <InputField label="Nome do filho(a)" value={data.childName} onChange={(v) => update('childName', v)} placeholder="Nome" />
+                <SelectField label="Sexo" value={data.childSex} onChange={(v) => update('childSex', v)} options={[
+                  { value: 'F', label: 'Feminino' }, { value: 'M', label: 'Masculino' }, { value: 'outro', label: 'Outro' },
+                ]} />
+                <InputField label="Data de nascimento" value={data.childBirthDate} onChange={(v) => update('childBirthDate', v)} type="date" />
+                <InputField label="Idade (meses)" value={data.childAgeMonths} onChange={(v) => update('childAgeMonths', v)} placeholder="Ex: 12" />
+              </div>
+            )}
+
             {/* Feedback contextual */}
             <div className="mt-6 pt-6 border-t border-[#B3124F]/15">
               <PremiumButtonV3 onClick={handleSave}>
@@ -337,6 +449,20 @@ function PerfilContent() {
           </div>
         </GlassCardV2>
       </motion.div>
+
+      {/* Toast de sucesso */}
+      <AnimatePresence>
+        {toastVisible && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-[16px] bg-[#B3124F] text-white text-sm font-medium shadow-lg"
+          >
+            ✓ Alterações salvas com sucesso
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
