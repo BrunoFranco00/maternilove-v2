@@ -16,6 +16,11 @@ build/
 .env.local
 .env.*.local
 
+# Segredos e backups (não commitar)
+backend/.env*
+backend/*.backup
+*.backup
+
 # Logs (exceto rota admin/logs)
 logs/
 !**/app/admin/logs/
