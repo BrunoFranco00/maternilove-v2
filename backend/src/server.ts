@@ -16,6 +16,7 @@ import communityRoutes from './modules/community/routes.js';
 import marketplaceRoutes from './modules/marketplace/routes.js';
 import journeyRoutes from './modules/journey/routes.js';
 import checkinRoutes from './modules/checkin/routes.js';
+import maternalProfileRoutes from './modules/maternal-profile/routes.js';
 import adminRoutes from './routes/admin.routes.js';
 import { authenticate } from './middleware/auth.middleware.js';
 import { authorize } from './shared/middleware/authorize.middleware.js';
@@ -266,6 +267,7 @@ app.get('/api', (req: Request, res: Response) => {
       marketplace: '/api/v1/marketplace',
       journey: '/api/v1/journey',
       checkin: '/api/v1/checkin',
+      maternalProfile: '/api/v1/maternal-profile',
       users: '/api/v1/users',
     },
     note: 'Rotas em /api/* são mantidas por compatibilidade, mas use /api/v1/*'
@@ -282,6 +284,7 @@ app.use('/api/v1/community', communityRoutes);
 app.use('/api/v1/marketplace', marketplaceRoutes);
 app.use('/api/v1/journey', journeyRoutes);
 app.use('/api/v1/checkin', checkinRoutes);
+app.use('/api/v1/maternal-profile', maternalProfileRoutes);
 app.use('/api/v1/admin', adminRoutes);
 
 // Placeholder Route versionada
@@ -312,6 +315,7 @@ app.use('/api/community', communityRoutes);
 app.use('/api/marketplace', marketplaceRoutes);
 app.use('/api/journey', journeyRoutes);
 app.use('/api/checkin', checkinRoutes);
+app.use('/api/maternal-profile', maternalProfileRoutes);
 
 // Placeholder Route legacy
 app.get('/api/users', (req: Request, res: Response) => {

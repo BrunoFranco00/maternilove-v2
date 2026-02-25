@@ -1,11 +1,11 @@
-# Rollback Snapshot — Pré Maternal Profile
+# Rollback Snapshot — Pré Maternal Profile Domain
 
-**Data/Hora:** 2026-02-25 11:37  
-**Hash atual:** `df512f9bf37210ecd45498171929e2d63a608b78`
+**Data/Hora:** 2026-02-25 11:42  
+**Hash atual:** `2bec28adf50737abdf9476bbaba1895f6206b1fd`
 
 ---
 
-## Como voltar ao estado atual
+## Como voltar ao estado atual (antes do maternal profile)
 
 ### Opção 1: Revert (preferencial)
 
@@ -19,11 +19,11 @@ git revert <commit-mais-recente>..HEAD --no-edit
 
 ### Opção 2: Reset (apenas em emergência)
 
-**Atenção:** Perde todos os commits após o hash. Use apenas se tiver certeza.
+**Atenção:** Perde todos os commits após o hash. Use apenas se tiver certeza. Prefira `--force-with-lease` a `--force` para evitar sobrescrever trabalho remoto não puxado.
 
 ```bash
-git reset --hard df512f9bf37210ecd45498171929e2d63a608b78
-git push origin master --force  # cuidado: reescreve histórico remoto
+git reset --hard 2bec28adf50737abdf9476bbaba1895f6206b1fd
+git push origin master --force-with-lease  # somente se necessário
 ```
 
 ---
@@ -41,5 +41,5 @@ git push origin master
 ## Tag de referência
 
 ```bash
-git checkout snapshot-pre-maternal-profile-20260225-1137
+git checkout snapshot-pre-maternal-profile-20260225-1142
 ```
