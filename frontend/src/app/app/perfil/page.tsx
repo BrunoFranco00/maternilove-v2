@@ -14,8 +14,6 @@ import { calculateProfileCompletion, type MockProfileData } from '@/modules/prof
 import { mockMaternalContext } from '@/modules/feed/mock/maternalContext.mock';
 import { loadLocalProfile, saveLocalProfile } from '@/lib/profile/localProfileStorage';
 
-const AUTH_DISABLED = process.env.NEXT_PUBLIC_AUTH_DISABLED === 'true';
-
 type TabId = 'gestacional' | 'saude' | 'estilo' | 'emocional' | 'pessoal' | 'filho';
 
 interface ProfileData {
@@ -230,20 +228,19 @@ function PerfilContent() {
   }, [tabFromUrl]);
 
   useEffect(() => {
-    if (AUTH_DISABLED) {
-      const local = loadLocalProfile();
-      setData((prev) => ({
-        ...prev,
-        fullName: local.fullName ?? '',
-        phone: local.phone ?? '',
-        city: local.city ?? '',
-        state: local.state ?? '',
-        childName: local.childName ?? '',
-        childSex: local.childSex ?? '',
-        childBirthDate: local.childBirthDate ?? '',
-        childAgeMonths: local.childAgeMonths ?? '',
-      }));
-    }
+    const local = loadLocalProfile();
+    setData((prev) => ({
+      ...prev,
+      fullName: local.fullName ?? prev.fullName ?? '',
+      phone: local.phone ?? prev.phone ?? '',
+      city: local.city ?? prev.city ?? '',
+      state: local.state ?? prev.state ?? '',
+      childName: local.childName ?? prev.childName ?? '',
+      childSex: local.childSex ?? prev.childSex ?? '',
+      childBirthDate: local.childBirthDate ?? prev.childBirthDate ?? '',
+      childAgeMonths: local.childAgeMonths ?? prev.childAgeMonths ?? '',
+    }));
+    // TODO: Carregar do backend quando API de perfil estiver disponível
   }, []);
 
   const mockData = toMockProfileData(data);
@@ -260,18 +257,17 @@ function PerfilContent() {
   };
 
   const handleSave = () => {
-    if (AUTH_DISABLED) {
-      saveLocalProfile({
-        fullName: data.fullName,
-        phone: data.phone,
-        city: data.city,
-        state: data.state,
-        childName: data.childName,
-        childSex: data.childSex,
-        childBirthDate: data.childBirthDate,
-        childAgeMonths: data.childAgeMonths,
-      });
-    }
+    saveLocalProfile({
+      fullName: data.fullName,
+      phone: data.phone,
+      city: data.city,
+      state: data.state,
+      childName: data.childName,
+      childSex: data.childSex,
+      childBirthDate: data.childBirthDate,
+      childAgeMonths: data.childAgeMonths,
+    });
+    // TODO: POST para API de perfil quando estiver disponível
     setSavedFeedback(true);
     setToastVisible(true);
     setTimeout(() => {

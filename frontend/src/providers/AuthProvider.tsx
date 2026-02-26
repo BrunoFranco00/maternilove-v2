@@ -13,6 +13,7 @@ import { useRouter } from 'next/navigation';
 import * as authService from '@/services/authService';
 import { getOnboardingRoute, getDefaultRoute, requiresOnboarding, isAdmin } from '@/utils/rbac';
 import { normalizeRole } from '@/lib/normalizeRole';
+import { migrateLocalCheckinOnLogin } from '@/lib/checkin/migrateLocalCheckin';
 import type {
   AuthStatus,
   User,
@@ -71,6 +72,8 @@ interface AuthProviderProps {
 }
 
 const ONBOARDING_STORAGE_KEY = 'onboardingCompleted';
+const SESSION_COOKIE = 'maternilove-session';
+const SESSION_COOKIE_MAX_AGE_DAYS = 365;
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const router = useRouter();
@@ -79,15 +82,36 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [isOnboardingCompleted, setIsOnboardingCompleted] = useState<boolean>(false);
   const [authReady, setAuthReady] = useState<boolean>(false);
 
+  const setSessionCookie = useCallback(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const expires = new Date();
+      expires.setTime(expires.getTime() + SESSION_COOKIE_MAX_AGE_DAYS * 24 * 60 * 60 * 1000);
+      document.cookie = `${SESSION_COOKIE}=1; expires=${expires.toUTCString()}; path=/; SameSite=Lax`;
+    } catch (error) {
+      console.error('Error setting session cookie:', error);
+    }
+  }, []);
+
+  const clearSessionCookie = useCallback(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      document.cookie = `${SESSION_COOKIE}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+    } catch (error) {
+      console.error('Error clearing session cookie:', error);
+    }
+  }, []);
+
   const saveTokens = useCallback((accessToken: string, refreshTokenValue: string) => {
     if (typeof window === 'undefined') return;
     try {
       localStorage.setItem('accessToken', accessToken);
       localStorage.setItem('refreshToken', refreshTokenValue);
+      setSessionCookie();
     } catch (error) {
       console.error('Error saving tokens:', error);
     }
-  }, []);
+  }, [setSessionCookie]);
 
   const clearTokens = useCallback(() => {
     if (typeof window === 'undefined') return;
@@ -95,10 +119,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
       localStorage.removeItem(ONBOARDING_STORAGE_KEY);
+      clearSessionCookie();
     } catch (error) {
       console.error('Error clearing tokens:', error);
     }
-  }, []);
+  }, [clearSessionCookie]);
 
   const setUserRoleCookie = useCallback((role: string) => {
     if (typeof window === 'undefined') return;
@@ -218,6 +243,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       saveUser(result.user);
       checkOnboardingStatus();
       setStatus('authenticated');
+      migrateLocalCheckinOnLogin().catch(() => {});
       return { success: true };
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erro ao fazer login';
@@ -236,6 +262,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       saveUser(result.user);
       setIsOnboardingCompleted(false);
       setStatus('authenticated');
+      migrateLocalCheckinOnLogin().catch(() => {});
       return { success: true };
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erro ao criar conta';
@@ -283,21 +310,24 @@ export function AuthProvider({ children }: AuthProviderProps) {
       try {
         const storedRefreshToken = localStorage.getItem('refreshToken');
         const storedUser = localStorage.getItem('user');
-        const userRoleCookie = document.cookie
-          .split('; ')
-          .find((row) => row.startsWith('user_role='))
-          ?.split('=')[1];
 
-        if (!storedRefreshToken || !storedUser || !userRoleCookie) {
+        if (!storedRefreshToken || !storedUser) {
           setStatus('unauthenticated');
           setAuthReady(true);
           return;
         }
-        const normalizedCookieRole = normalizeRole(userRoleCookie);
+        const userData = JSON.parse(storedUser) as User;
+        const userRoleFromCookie = document.cookie
+          .split('; ')
+          .find((row) => row.startsWith('user_role='))
+          ?.split('=')[1];
+        const normalizedCookieRole = userRoleFromCookie
+          ? normalizeRole(userRoleFromCookie)
+          : normalizeRole(userData.role);
+        setUserRoleCookie(normalizedCookieRole);
         const request: RefreshRequest = { refreshToken: storedRefreshToken };
         const result = await authService.refresh(request);
         saveTokens(result.accessToken, result.refreshToken);
-        const userData = JSON.parse(storedUser) as User;
         const normalizedUser: User = { ...userData, role: normalizedCookieRole };
         localStorage.setItem('user', JSON.stringify(normalizedUser));
         setUser(normalizedUser);

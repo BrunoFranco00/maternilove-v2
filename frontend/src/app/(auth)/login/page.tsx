@@ -2,27 +2,39 @@
 
 export const dynamic = 'force-dynamic';
 
-/**
- * Tela de Login - AUTH DESABILITADO PARA TESTE: redireciona para /app/dashboard.
- */
-
 import { useState, FormEvent } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useToast } from '@/providers/ToastProvider';
+import { useAuth } from '@/providers/AuthProvider';
 import { t } from '@/lib/i18n';
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { showToast } = useToast();
+  const { login, getPostLoginRoute } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
-    showToast('Auth desabilitado - redirecionando para dashboard', 'success');
-    router.replace('/app/inicio');
-    setIsLoading(false);
+    try {
+      const result = await login(email, password);
+      if (result.success) {
+        showToast('Login realizado com sucesso', 'success');
+        const redirectTo = searchParams.get('redirect') || getPostLoginRoute();
+        router.replace(redirectTo);
+      } else {
+        showToast(result.error ?? 'Erro ao fazer login', 'error');
+      }
+    } catch {
+      showToast('Erro ao fazer login', 'error');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -35,9 +47,6 @@ export default function LoginPage() {
           <p className="text-gray-600 mb-8 text-center">
             {t('page.login.description')}
           </p>
-          <p className="text-amber-600 text-sm mb-4 text-center">
-            Auth desabilitado para teste. Clique em Entrar para ir ao check-in.
-          </p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
@@ -45,6 +54,8 @@ export default function LoginPage() {
               <input
                 type="email"
                 required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 disabled={isLoading}
                 placeholder="seu@email.com"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
@@ -55,6 +66,8 @@ export default function LoginPage() {
               <input
                 type="password"
                 required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 disabled={isLoading}
                 placeholder="••••••••"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
@@ -76,6 +89,12 @@ export default function LoginPage() {
                 Criar conta
               </Link>
             </p>
+          </div>
+
+          <div className="mt-4 text-center">
+            <Link href="/check-in" className="text-sm text-gray-500 hover:text-gray-700">
+              Fazer check-in sem login
+            </Link>
           </div>
         </div>
       </div>

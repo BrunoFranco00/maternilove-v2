@@ -17,7 +17,14 @@ export default function HomePage() {
         <p className="text-lg text-gray-600 mb-8">
           {t('page.home.description')}
         </p>
-        <div className="flex gap-4 justify-center">
+        <div className="flex flex-wrap gap-4 justify-center">
+          <Link
+            href="/check-in"
+            aria-label="Fazer check-in emocional"
+            className="px-6 py-3 bg-[#B3124F] text-white rounded-md hover:bg-[#9A0E42] focus:outline-none focus:ring-2 focus:ring-[#B3124F] focus:ring-offset-2 transition-colors"
+          >
+            Check-in emocional
+          </Link>
           <Link
             href="/login"
             aria-label="Acessar página de login"

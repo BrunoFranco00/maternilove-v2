@@ -1,6 +1,6 @@
 /**
  * Armazena temporariamente a resposta do check-in para exibir na página de alívio.
- * Usado quando auth está desabilitado (modo demo).
+ * Usado no fluxo público de check-in (sem login).
  */
 
 const RESPONSE_KEY = 'maternilove-last-checkin-response';

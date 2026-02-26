@@ -54,7 +54,7 @@ export function JourneyHeroCard({
         </div>
 
         <Link
-          href="/app/check-in"
+          href="/check-in"
           className="block w-full py-3 px-5 rounded-[16px] font-medium text-center transition-all duration-200 bg-white/95 text-[#8E0E3A] hover:bg-white active:scale-[0.98]"
         >
           E amanhã, como estarei, mamãe?

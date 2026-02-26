@@ -1,8 +1,8 @@
 /**
  * Mapeamento categoria → imagem para cards do feed/início.
  * Categorias: GRAVIDEZ, NUTRICAO, MOVIMENTO, SONO, POS_PARTO, BEBE, CRIANCA
+ * TODO: substituir por imagens locais em /public/images/categories/*.jpg quando houver assets.
  */
-
 export type ContentCategory =
   | 'GRAVIDEZ'
   | 'NUTRICAO'

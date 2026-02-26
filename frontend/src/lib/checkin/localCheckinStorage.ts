@@ -1,5 +1,5 @@
 /**
- * Persistência local de check-in quando auth está desabilitado.
+ * Persistência local de check-in para fluxo público (sem login).
  */
 
 const STORAGE_KEY = 'maternilove-checkin-local';

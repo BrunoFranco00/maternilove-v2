@@ -1,5 +1,5 @@
 /**
- * Persistência local do perfil quando auth está desabilitado (modo demo).
+ * Persistência local do perfil (fallback até integração com API).
  * TODO: Integrar com API quando autenticação estiver habilitada.
  */
 

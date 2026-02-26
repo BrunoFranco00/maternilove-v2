@@ -2,27 +2,43 @@
 
 export const dynamic = 'force-dynamic';
 
-/**
- * Tela de Register - AUTH DESABILITADO PARA TESTE: redireciona para /app/dashboard.
- */
-
 import { useState, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useToast } from '@/providers/ToastProvider';
+import { useAuth } from '@/providers/AuthProvider';
 import { t } from '@/lib/i18n';
 
 export default function RegisterPage() {
   const router = useRouter();
   const { showToast } = useToast();
+  const { register, getPostLoginRoute } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (password !== confirmPassword) {
+      showToast('As senhas não coincidem', 'error');
+      return;
+    }
     setIsLoading(true);
-    showToast('Auth desabilitado - redirecionando para dashboard', 'success');
-    router.replace('/app/inicio');
-    setIsLoading(false);
+    try {
+      const result = await register({ name, email, password });
+      if (result.success) {
+        showToast('Conta criada com sucesso', 'success');
+        router.replace(getPostLoginRoute());
+      } else {
+        showToast(result.error ?? 'Erro ao criar conta', 'error');
+      }
+    } catch {
+      showToast('Erro ao criar conta', 'error');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -35,9 +51,6 @@ export default function RegisterPage() {
           <p className="text-gray-600 mb-8 text-center">
             {t('page.register.description')}
           </p>
-          <p className="text-amber-600 text-sm mb-4 text-center">
-            Auth desabilitado para teste. Clique em Criar conta para ir ao dashboard.
-          </p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
@@ -46,6 +59,8 @@ export default function RegisterPage() {
                 type="text"
                 required
                 minLength={2}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
                 disabled={isLoading}
                 placeholder="Seu nome completo"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
@@ -56,6 +71,8 @@ export default function RegisterPage() {
               <input
                 type="email"
                 required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 disabled={isLoading}
                 placeholder="seu@email.com"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
@@ -67,6 +84,8 @@ export default function RegisterPage() {
                 type="password"
                 required
                 minLength={6}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 disabled={isLoading}
                 placeholder="••••••••"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
@@ -78,6 +97,8 @@ export default function RegisterPage() {
                 type="password"
                 required
                 minLength={6}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
                 disabled={isLoading}
                 placeholder="••••••••"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"

@@ -7,7 +7,10 @@ import { persistLocalCheckin } from '@/lib/checkin/localCheckinStorage';
 import { saveCheckinResponseForRelief } from '@/lib/checkin/checkinResponseStorage';
 import { mockMaternalContext } from '@/modules/feed/mock/maternalContext.mock';
 
-const AUTH_DISABLED = process.env.NEXT_PUBLIC_AUTH_DISABLED === 'true';
+function isAuthenticated(): boolean {
+  if (typeof window === 'undefined') return false;
+  return !!localStorage.getItem('accessToken');
+}
 
 interface CoreState {
   checkIn: (data: CheckInRequestDto) => Promise<CheckInResponseDto | null>;
@@ -24,7 +27,7 @@ export const useCoreStore = create<CoreState>((set) => ({
   checkIn: async (data: CheckInRequestDto) => {
     set({ isLoading: true, error: null });
     try {
-      if (AUTH_DISABLED) {
+      if (!isAuthenticated()) {
         const week = mockMaternalContext.gestationalWeek ?? 24;
         const phase = mockMaternalContext.mode;
         const engineOutput = generateCheckinResponse({
