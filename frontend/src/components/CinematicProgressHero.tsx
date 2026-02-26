@@ -3,15 +3,20 @@
 import { getPregnancyWeekContent } from '@/lib/progress/progressContent';
 import { getSizeComparison } from '@/premium/progressData';
 import { getEmotionalContext } from '@/premium/progressData';
+import { resolveProgressVisual } from '@/lib/images/imageResolvers';
+
+const isDev = process.env.NODE_ENV !== 'production';
 
 interface CinematicProgressHeroProps {
   week: number;
 }
 
 export function CinematicProgressHero({ week }: CinematicProgressHeroProps) {
-  const content = getPregnancyWeekContent(week);
-  const comparacao = getSizeComparison(week);
-  const contextoEmocional = getEmotionalContext(week);
+  const clampedWeek = Math.max(1, Math.min(40, week ?? 24));
+  const content = getPregnancyWeekContent(clampedWeek);
+  const progressSrc = resolveProgressVisual({ type: 'pregnancy', week: clampedWeek });
+  const comparacao = getSizeComparison(clampedWeek);
+  const contextoEmocional = getEmotionalContext(clampedWeek);
 
   return (
     <div
@@ -51,11 +56,17 @@ export function CinematicProgressHero({ week }: CinematicProgressHeroProps) {
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={content.image}
+            src={progressSrc}
             alt=""
             className="w-full h-full object-cover"
           />
         </div>
+
+        {isDev && (
+          <p className="text-[10px] font-mono text-[#888] text-center mb-2">
+            week: {clampedWeek} | img: {progressSrc}
+          </p>
+        )}
 
         <h2 className="text-2xl font-semibold text-[#1C1C1C] mb-1">
           {content.title}

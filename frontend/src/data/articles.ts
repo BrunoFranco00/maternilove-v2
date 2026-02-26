@@ -590,15 +590,35 @@ export function getArticlesByCategory(category: ArticleCategory): Article[] {
   return ARTICLES.filter((a) => a.category === category);
 }
 
+/** Ordem de prioridade para mix diverso de categorias no feed (imagens diferentes) */
+const PHASE_CATEGORY_PRIORITY: ArticleCategory[][] = [
+  ['gravidez', 'emocional', 'gravidez', 'recem-nascido', 'emocional', 'gravidez', 'recem-nascido'],
+  ['recem-nascido', 'emocional', 'recem-nascido', 'emocional', '1-2 anos', 'emocional', 'recem-nascido'],
+];
+
 export function getArticlesForPhase(weeks: number, limit = 6): Article[] {
-  let articles: Article[] = [];
-  if (weeks >= 1 && weeks <= 40) {
-    articles = getArticlesByCategory('gravidez');
-  } else {
-    articles = [
-      ...getArticlesByCategory('recem-nascido'),
-      ...getArticlesByCategory('emocional'),
-    ];
+  const isPregnancy = weeks >= 1 && weeks <= 40;
+  const categories = isPregnancy
+    ? PHASE_CATEGORY_PRIORITY[0]
+    : PHASE_CATEGORY_PRIORITY[1];
+  const seen = new Set<string>();
+  const result: Article[] = [];
+  for (const cat of categories) {
+    const pool = getArticlesByCategory(cat);
+    for (const a of pool) {
+      if (seen.has(a.id)) continue;
+      seen.add(a.id);
+      result.push(a);
+      if (result.length >= limit) break;
+    }
+    if (result.length >= limit) break;
   }
-  return articles.slice(0, limit);
+  while (result.length < limit) {
+    const remaining = ARTICLES.filter((a) => !seen.has(a.id));
+    if (remaining.length === 0) break;
+    const pick = remaining[0];
+    seen.add(pick.id);
+    result.push(pick);
+  }
+  return result.slice(0, limit);
 }

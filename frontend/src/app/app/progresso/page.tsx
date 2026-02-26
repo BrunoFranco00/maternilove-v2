@@ -8,6 +8,7 @@ import { CinematicProgressHero } from '@/components/CinematicProgressHero';
 import { ProgressTimeline } from '@/components/ProgressTimeline';
 import { mockMaternalContext } from '@/modules/feed/mock/maternalContext.mock';
 import { getPregnancyWeekContent, getChildMonthContent } from '@/lib/progress/progressContent';
+import { resolveProgressVisual } from '@/lib/images/imageResolvers';
 
 function DataRow({
   label,
@@ -26,11 +27,13 @@ function DataRow({
   );
 }
 
+const isDev = process.env.NODE_ENV !== 'production';
+
 function ProgressoContent() {
   const ctx = mockMaternalContext;
   const isPregnancy = ctx.mode === 'PREGNANT';
-  const semanaAtual = ctx.gestationalWeek ?? 24;
-  const childAgeMonths = ctx.babyAgeMonths ?? 0;
+  const semanaAtual = Math.max(1, Math.min(40, ctx.gestationalWeek ?? 24));
+  const childAgeMonths = Math.max(0, Math.min(60, ctx.babyAgeMonths ?? 0));
 
   const pregnancyContent = getPregnancyWeekContent(semanaAtual);
   const childContent = getChildMonthContent(childAgeMonths);
@@ -45,8 +48,17 @@ function ProgressoContent() {
         <GlassCardV2 className="overflow-hidden p-0">
           <div className="aspect-video w-full">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={childContent.image} alt="" className="w-full h-full object-cover" />
+            <img
+              src={resolveProgressVisual({ type: 'child', month: childAgeMonths })}
+              alt=""
+              className="w-full h-full object-cover"
+            />
           </div>
+          {isDev && (
+            <p className="text-[10px] font-mono text-[#888] px-6">
+              month: {childAgeMonths} | img: {resolveProgressVisual({ type: 'child', month: childAgeMonths })}
+            </p>
+          )}
           <div className="p-6">
             <h2 className="text-xl font-semibold text-[#1C1C1C]">{childContent.title}</h2>
             <p className="text-[#B3124F] font-medium mt-1">{childContent.subtitle}</p>
@@ -64,6 +76,11 @@ function ProgressoContent() {
         <p className="text-[#5F5F5F] mt-1 text-sm">Acompanhe o desenvolvimento da sua gestação</p>
       </div>
 
+      {isDev && (
+        <p className="text-[10px] font-mono text-[#888]">
+          week: {semanaAtual} | src: {resolveProgressVisual({ type: 'pregnancy', week: semanaAtual })}
+        </p>
+      )}
       <CinematicProgressHero week={semanaAtual} />
 
       <GlassCardV2>

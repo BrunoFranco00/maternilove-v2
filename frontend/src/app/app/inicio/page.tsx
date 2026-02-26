@@ -8,7 +8,7 @@ import { GlassCardV2 } from '@/premium/GlassCardV2';
 import { PremiumButtonV3 } from '@/premium/PremiumButtonV3';
 import { getArticlesForPhase } from '@/data/articles';
 import type { Article } from '@/data/articles';
-import { getCategoryImage } from '@/lib/categoryImages';
+import { resolveCategoryVisual } from '@/lib/images/imageResolvers';
 import { getLocalCheckinState } from '@/lib/checkin/localCheckinStorage';
 import { mockMaternalContext } from '@/modules/feed/mock/maternalContext.mock';
 import { shadows } from '@/premium/foundation';
@@ -33,8 +33,10 @@ function useFadeIn() {
   return { ref, visible };
 }
 
+const isDev = process.env.NODE_ENV !== 'production';
+
 function ArticleHero({ article }: { article: Article }) {
-  const heroImg = getCategoryImage(article.category);
+  const heroImg = resolveCategoryVisual(article.category);
   const { ref, visible } = useFadeIn();
 
   return (
@@ -57,6 +59,11 @@ function ArticleHero({ article }: { article: Article }) {
           />
         </div>
         <div className="p-6 space-y-4">
+          {isDev && (
+            <p className="text-[10px] font-mono text-[#888] truncate" title={heroImg}>
+              img: {heroImg.length > 60 ? `${heroImg.slice(0, 60)}...` : heroImg}
+            </p>
+          )}
           <span className="text-xs font-medium text-[#B3124F] uppercase tracking-[0.1em]">
             {article.category}
           </span>
@@ -74,7 +81,7 @@ function ArticleHero({ article }: { article: Article }) {
 }
 
 function ArticleCard({ article }: { article: Article }) {
-  const heroImg = getCategoryImage(article.category);
+  const heroImg = resolveCategoryVisual(article.category);
   const { ref, visible } = useFadeIn();
 
   return (
@@ -97,6 +104,11 @@ function ArticleCard({ article }: { article: Article }) {
             />
           </div>
           <div className="flex-1 min-w-0 p-4 flex flex-col justify-center">
+            {isDev && (
+              <p className="text-[10px] font-mono text-[#888] truncate" title={heroImg}>
+                img: {heroImg.length > 50 ? `${heroImg.slice(0, 50)}...` : heroImg}
+              </p>
+            )}
             <span className="text-xs font-medium text-[#B3124F] uppercase tracking-wide">
               {article.category}
             </span>
