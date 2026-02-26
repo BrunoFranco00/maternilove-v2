@@ -7,6 +7,12 @@ const AUTH_COOKIE = 'maternilove-session';
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  if (pathname === '/check-in' || pathname === '/relief') {
+    const loginUrl = new URL('/login', request.url);
+    loginUrl.searchParams.set('redirect', pathname === '/check-in' ? '/app/check-in' : '/app/relief');
+    return NextResponse.redirect(loginUrl);
+  }
+
   if (!pathname.startsWith('/app')) {
     return NextResponse.next();
   }

@@ -166,7 +166,7 @@ function InicioContent() {
           <p className="text-[#5F5F5F] text-xs mb-4">
             Check-in emocional
           </p>
-          <Link href="/check-in">
+          <Link href="/app/check-in">
             <PremiumButtonV3>Check-in</PremiumButtonV3>
           </Link>
         </GlassCardV2>
@@ -213,7 +213,7 @@ function InicioContent() {
           Acesso rápido
         </h2>
         <div className="flex flex-wrap gap-2">
-          <Link href="/relief">
+          <Link href="/app/relief">
             <PremiumButtonV3 variant="ghost">Recursos</PremiumButtonV3>
           </Link>
           <Link href="/app/community">

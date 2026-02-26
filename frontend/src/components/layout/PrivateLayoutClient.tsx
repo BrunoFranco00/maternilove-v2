@@ -27,7 +27,7 @@ export function PrivateLayoutClient({
               </Link>
             </div>
             <nav className="flex items-center space-x-4">
-              <Link href="/check-in" className="text-gray-700 hover:text-gray-900 text-sm">
+              <Link href="/app/check-in" className="text-gray-700 hover:text-gray-900 text-sm">
                 Check-in
               </Link>
               <Link href={homeHref} className="text-gray-700 hover:text-gray-900">

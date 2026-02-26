@@ -32,7 +32,7 @@ export function FeedHero({ weekOrAge, unit, emotionalPhrase }: FeedHeroProps) {
         <h1 className="text-2xl md:text-3xl font-semibold text-[#1C1C1C] leading-tight mb-3">
           {emotionalPhrase}
         </h1>
-        <Link href="/check-in">
+        <Link href="/app/check-in">
           <PremiumButtonV3 variant="ghost" className="mt-2">
             Como você está hoje?
           </PremiumButtonV3>

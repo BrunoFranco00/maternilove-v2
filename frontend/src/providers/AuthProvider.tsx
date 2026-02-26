@@ -13,7 +13,6 @@ import { useRouter } from 'next/navigation';
 import * as authService from '@/services/authService';
 import { getOnboardingRoute, getDefaultRoute, requiresOnboarding, isAdmin } from '@/utils/rbac';
 import { normalizeRole } from '@/lib/normalizeRole';
-import { migrateLocalCheckinOnLogin } from '@/lib/checkin/migrateLocalCheckin';
 import type {
   AuthStatus,
   User,
@@ -243,7 +242,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
       saveUser(result.user);
       checkOnboardingStatus();
       setStatus('authenticated');
-      migrateLocalCheckinOnLogin().catch(() => {});
       return { success: true };
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erro ao fazer login';
@@ -262,7 +260,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
       saveUser(result.user);
       setIsOnboardingCompleted(false);
       setStatus('authenticated');
-      migrateLocalCheckinOnLogin().catch(() => {});
       return { success: true };
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erro ao criar conta';

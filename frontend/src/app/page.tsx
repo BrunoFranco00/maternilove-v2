@@ -19,7 +19,7 @@ export default function HomePage() {
         </p>
         <div className="flex flex-wrap gap-4 justify-center">
           <Link
-            href="/check-in"
+            href="/login?redirect=/app/check-in"
             aria-label="Fazer check-in emocional"
             className="px-6 py-3 bg-[#B3124F] text-white rounded-md hover:bg-[#9A0E42] focus:outline-none focus:ring-2 focus:ring-[#B3124F] focus:ring-offset-2 transition-colors"
           >
