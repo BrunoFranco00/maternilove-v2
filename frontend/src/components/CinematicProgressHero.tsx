@@ -1,43 +1,15 @@
 'use client';
 
+import { getPregnancyWeekContent } from '@/lib/progress/progressContent';
 import { getSizeComparison } from '@/premium/progressData';
 import { getEmotionalContext } from '@/premium/progressData';
-
-/**
- * Ilustração 2.5D estilizada - silhueta fetal abstrata em SVG
- */
-function FetalSilhouetteSVG() {
-  return (
-    <svg
-      viewBox="0 0 120 160"
-      className="w-full max-w-[180px] h-auto"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      style={{ filter: 'drop-shadow(0 4px 12px rgba(179,18,79,0.15))' }}
-    >
-      <defs>
-        <linearGradient id="fetalGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#F8C7D8" />
-          <stop offset="50%" stopColor="#F3A9BF" />
-          <stop offset="100%" stopColor="#E891A8" />
-        </linearGradient>
-      </defs>
-      <ellipse cx="60" cy="38" rx="26" ry="30" fill="url(#fetalGrad)" opacity="0.95" />
-      <path
-        d="M34 68 Q22 92 38 118 Q52 138 60 142 Q68 138 82 118 Q98 92 86 68 Q72 58 60 58 Q48 58 34 68"
-        fill="url(#fetalGrad)"
-        opacity="0.92"
-      />
-      <path d="M86 72 Q92 86 88 94 Q84 88 84 80 Z" fill="url(#fetalGrad)" opacity="0.88" />
-    </svg>
-  );
-}
 
 interface CinematicProgressHeroProps {
   week: number;
 }
 
 export function CinematicProgressHero({ week }: CinematicProgressHeroProps) {
+  const content = getPregnancyWeekContent(week);
   const comparacao = getSizeComparison(week);
   const contextoEmocional = getEmotionalContext(week);
 
@@ -74,16 +46,19 @@ export function CinematicProgressHero({ week }: CinematicProgressHeroProps) {
 
       <div className="relative flex flex-col items-center">
         <div
-          className="mb-6"
-          style={{
-            animation: 'floatGentle 6s ease-in-out infinite',
-          }}
+          className="mb-4 w-full max-w-[280px] aspect-video rounded-xl overflow-hidden"
+          style={{ boxShadow: '0 8px 24px rgba(179,18,79,0.15)' }}
         >
-          <FetalSilhouetteSVG />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={content.image}
+            alt=""
+            className="w-full h-full object-cover"
+          />
         </div>
 
         <h2 className="text-2xl font-semibold text-[#1C1C1C] mb-1">
-          Semana {week}
+          {content.title}
         </h2>
         <p className="text-lg text-[#B3124F] font-medium mb-2">
           Ele está do tamanho de uma {comparacao}

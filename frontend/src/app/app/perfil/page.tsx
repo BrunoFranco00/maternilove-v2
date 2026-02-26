@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
@@ -44,13 +44,13 @@ interface ProfileData {
   childAgeMonths: string;
 }
 
-const TABS: { id: TabId; label: string }[] = [
-  { id: 'gestacional', label: 'Dados Gestacionais' },
+const WIZARD_STEPS: { id: TabId; label: string }[] = [
+  { id: 'pessoal', label: 'Dados Pessoais' },
+  { id: 'filho', label: 'Filho / Criança' },
+  { id: 'gestacional', label: 'Gestação' },
   { id: 'saude', label: 'Saúde' },
   { id: 'estilo', label: 'Estilo de Vida' },
   { id: 'emocional', label: 'Saúde Emocional' },
-  { id: 'pessoal', label: 'Dados Pessoais' },
-  { id: 'filho', label: 'Filho / Criança' },
 ];
 
 const INITIAL_DATA: ProfileData = {
@@ -208,24 +208,39 @@ function SelectField({
   );
 }
 
-const VALID_TABS: TabId[] = ['gestacional', 'saude', 'estilo', 'emocional', 'pessoal', 'filho'];
+const VALID_STEPS: TabId[] = ['pessoal', 'filho', 'gestacional', 'saude', 'estilo', 'emocional'];
+
+function isPessoalComplete(data: ProfileData): boolean {
+  return !!(data.fullName?.trim() && data.phone?.trim());
+}
+
+function isFilhoComplete(data: ProfileData): boolean {
+  return !!(data.childName?.trim() || data.childSex || data.childBirthDate?.trim());
+}
+
+function isGestacaoComplete(data: ProfileData): boolean {
+  return !!(data.dataPrevistaParto?.trim() || data.semanasAtuais?.trim());
+}
 
 function PerfilContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const tabFromUrl = searchParams.get('tab') as TabId | null;
-  const initialTab = tabFromUrl && VALID_TABS.includes(tabFromUrl) ? tabFromUrl : 'gestacional';
+  const stepFromUrl = (searchParams.get('step') || searchParams.get('tab')) as TabId | null;
+  const initialStep = stepFromUrl && VALID_STEPS.includes(stepFromUrl) ? stepFromUrl : 'pessoal';
 
-  const [activeTab, setActiveTab] = useState<TabId>(initialTab);
+  const [activeTab, setActiveTab] = useState<TabId>(initialStep);
   const [data, setData] = useState<ProfileData>(INITIAL_DATA);
   const [savedFeedback, setSavedFeedback] = useState(false);
   const [toastVisible, setToastVisible] = useState(false);
+  const [gateToast, setGateToast] = useState(false);
+  const formRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (tabFromUrl && VALID_TABS.includes(tabFromUrl)) {
-      setActiveTab(tabFromUrl);
+    const step = (searchParams.get('step') || searchParams.get('tab')) as TabId | null;
+    if (step && VALID_STEPS.includes(step)) {
+      setActiveTab(step);
     }
-  }, [tabFromUrl]);
+  }, [searchParams]);
 
   useEffect(() => {
     const local = loadLocalProfile();
@@ -252,8 +267,30 @@ function PerfilContent() {
   };
 
   const goToTab = (tab: TabId) => {
+    if (tab === 'pessoal') {
+      setActiveTab('pessoal');
+      router.replace(`/app/perfil?step=pessoal`, { scroll: false });
+      return;
+    }
+    if (tab === 'filho' && !isPessoalComplete(data)) {
+      setGateToast(true);
+      setTimeout(() => setGateToast(false), 3000);
+      setActiveTab('pessoal');
+      router.replace(`/app/perfil?step=pessoal`, { scroll: false });
+      return;
+    }
+    if (['gestacional', 'saude', 'estilo', 'emocional'].includes(tab)) {
+      if (!isFilhoComplete(data)) {
+        setGateToast(true);
+        setTimeout(() => setGateToast(false), 3000);
+        setActiveTab('filho');
+        router.replace(`/app/perfil?step=filho`, { scroll: false });
+        return;
+      }
+    }
     setActiveTab(tab);
-    router.replace(`/app/perfil?tab=${tab}`, { scroll: false });
+    router.replace(`/app/perfil?step=${tab}`, { scroll: false });
+    setTimeout(() => formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
   };
 
   const handleSave = () => {
@@ -317,9 +354,9 @@ function PerfilContent() {
         </GlassCardV2>
       </motion.div>
 
-      {/* Seções modulares */}
+      {/* Seções modulares (ordem wizard) */}
       <div className="space-y-4">
-        {TABS.map((tab) => (
+        {WIZARD_STEPS.map((tab) => (
           <ProfileSectionCard
             key={tab.id}
             title={tab.label}
@@ -331,14 +368,15 @@ function PerfilContent() {
         ))}
       </div>
 
-      {/* Form com abas */}
+      {/* Form com steps */}
       <motion.div
+        ref={formRef}
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35, delay: 0.2 }}
       >
         <div className="flex gap-1 p-1 rounded-xl bg-[#FFF1F4]/30 border border-[#B3124F]/15 overflow-x-auto">
-          {TABS.map((tab) => (
+          {WIZARD_STEPS.map((tab) => (
             <PremiumButtonV3
               key={tab.id}
               variant={activeTab === tab.id ? 'primary' : 'ghost'}
@@ -456,6 +494,20 @@ function PerfilContent() {
             className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-[16px] bg-[#B3124F] text-white text-sm font-medium shadow-lg"
           >
             ✓ Alterações salvas com sucesso
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Toast de gating */}
+      <AnimatePresence>
+        {gateToast && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-[16px] bg-amber-600 text-white text-sm font-medium shadow-lg"
+          >
+            Complete a etapa anterior primeiro
           </motion.div>
         )}
       </AnimatePresence>
