@@ -13,7 +13,7 @@ export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { showToast } = useToast();
-  const { login, getPostLoginRoute } = useAuth();
+  const { login } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -25,7 +25,7 @@ export default function LoginPage() {
       const result = await login(email, password);
       if (result.success) {
         showToast('Login realizado com sucesso', 'success');
-        const redirectTo = searchParams.get('redirect') || getPostLoginRoute();
+        const redirectTo = searchParams.get('redirect') || '/app/inicio';
         router.replace(redirectTo);
       } else {
         showToast(result.error ?? 'Erro ao fazer login', 'error');
